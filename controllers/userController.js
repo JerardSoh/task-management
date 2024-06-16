@@ -68,7 +68,47 @@ const createUser = async (req, res, next) => {
     }
 };
 
+// Create new group route: /group/new
+const createGroup = async (req, res, next) => {
+    try {
+        const { groupname } = req.body;
+        // Check if group already exists
+        const [existingGroup] = await db.execute('SELECT groupname FROM `groups` WHERE groupname = ?', [groupname]);
+        if (existingGroup.length > 0) {
+            throw new HttpError('Group already exists', 409);
+        }
+        // Create group
+        await db.execute('INSERT INTO `groups` (groupname) VALUES (?)', [groupname]);
+        res.status(201).json({ message: 'Group created successfully' });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// Get all groups route: /groups
+const getGroups = async (req, res, next) => {
+    try {
+        const [groups] = await db.query('SELECT * FROM `groups`');
+        res.json(groups);
+    } catch (error) {
+        next(error);
+    }
+};
+
+// Get all users route: /users
+const getUsers = async (req, res, next) => {
+    try {
+        const [users] = await db.query('SELECT username, email, status FROM users');
+        res.json(users);
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     login,
-    createUser
+    createUser,
+    createGroup,
+    getGroups,
+    getUsers
 };
