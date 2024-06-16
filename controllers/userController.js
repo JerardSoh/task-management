@@ -1,9 +1,10 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const db = require('../db');
+const HttpError = require('../middleware/httpError');
 
 // Login route: /login
-const login = async (req, res) => {
+const login = async (req, res, next) => {
     const { username, password } = req.body;
     try {
         const [rows] = await db.query('SELECT * FROM users WHERE username = ?', [username]);
@@ -14,31 +15,30 @@ const login = async (req, res) => {
             const token = jwt.sign({ username: user.username }, process.env.JWT_SECRET, { expiresIn: '1h' });
             res.json({ token });
         } else {
-            res.status(401).json({ message: 'Invalid username or password' });
+            throw new HttpError('Invalid username or password', 401);
         }
     } catch (error) {
-        res.status(500).json({ message: 'Error logging in', error });
+        next(error);
     }
 };
 
 // Create a new user route: /user/new
-const createUser = async (req, res) => {
-    const { username, password, email, status, groupnames } = req.body;
-
-    // Password validation
-    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,10}$/;
-    if (!passwordRegex.test(password)) {
-        return res.status(400).json({ message: 'Password must contain at least one number, one letter, and one special character, and be 8-10 characters long.' });
-    }
-
-    // Hashing password
-    const hashedPassword = bcrypt.hashSync(password, 8);
-
+const createUser = async (req, res, next) => {
     try {
+        const { username, password, email, status, groupnames } = req.body;
+        // Password validation
+        const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,10}$/;
+        if (!passwordRegex.test(password)) {
+            throw new HttpError('Password must contain at least one number, one letter, and one special character, and be 8-10 characters long.', 400);
+        }
+
+        // Hashing password
+        const hashedPassword = bcrypt.hashSync(password, 8);
+
         // Check if user already exists
         const [existingUser] = await db.execute('SELECT username FROM users WHERE username = ?', [username]);
         if (existingUser.length > 0) {
-            return res.status(409).json({ message: 'User already exists' });
+            throw new HttpError('User already exists', 409);
         }
 
         // Create user
@@ -57,14 +57,14 @@ const createUser = async (req, res) => {
                         [username, groupname]
                     );
                 } else {
-                    return res.status(400).json({ message: 'Group not found' });
+                    throw new HttpError('Group not found', 400);
                 }
             }
         }
 
         res.status(201).json({ message: 'User created successfully' });
     } catch (error) {
-        res.status(500).json({ message: 'Error creating user', error });
+        next(error);
     }
 };
 
