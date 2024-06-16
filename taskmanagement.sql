@@ -26,3 +26,12 @@ CREATE TABLE `usergroup` (
     FOREIGN KEY (`username`) REFERENCES `users`(`username`),
     FOREIGN KEY (`groupname`) REFERENCES `groups`(`groupname`)
 );
+
+select * from users;
+select * from usergroup;
+select * from `groups`;
+
+delete from usergroup where username = 'newUser';
+delete from users where username = 'newUser';
+delete from usergroup where username = 'newUser123';
+delete from users where username = 'newUser123';
