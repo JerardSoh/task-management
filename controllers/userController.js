@@ -64,18 +64,10 @@ const createUser = async (req, res, next) => {
         // Add user to group
         if (groupnames && Array.isArray(groupnames)) {
             for (const groupname of groupnames) {
-                const [group] = await db.execute(
-                    "SELECT groupname FROM `groups` WHERE groupname = ?",
-                    [groupname]
+                await db.execute(
+                    "INSERT INTO usergroup (username, groupname) VALUES (?, ?)",
+                    [username, groupname]
                 );
-                if (group.length > 0) {
-                    await db.execute(
-                        "INSERT INTO usergroup (username, groupname) VALUES (?, ?)",
-                        [username, groupname]
-                    );
-                } else {
-                    throw new HttpError("Group not found", 400);
-                }
             }
         }
 
@@ -211,20 +203,35 @@ const updateUserPassword = async (req, res, next) => {
 const assignGroup = async (req, res, next) => {
     try {
         const username = req.params.username;
-        const { groupname } = req.body;
-        const [group] = await db.execute(
-            "SELECT groupname FROM `groups` WHERE groupname = ?",
-            [groupname]
-        );
-        if (group.length > 0) {
-            await db.execute(
-                "INSERT INTO usergroup (username, groupname) VALUES (?, ?)",
-                [username, groupname]
-            );
-            res.status(201).json({ message: "Group assigned successfully" });
-        } else {
-            throw new HttpError("Group not found", 400);
+        const { groupnames } = req.body;
+        let assignedGroups = [];
+        let alreadyAssignedGroups = [];
+
+        if (groupnames && Array.isArray(groupnames)) {
+            for (const groupname of groupnames) {
+                // Check if user is already in the group
+                const [userInGroup] = await db.execute(
+                    "SELECT * FROM usergroup WHERE username = ? AND groupname = ?",
+                    [username, groupname]
+                );
+                // If user is not in the group, add them
+                if (userInGroup.length === 0) {
+                    await db.execute(
+                        "INSERT INTO usergroup (username, groupname) VALUES (?, ?)",
+                        [username, groupname]
+                    );
+                    assignedGroups.push(groupname);
+                } else {
+                    alreadyAssignedGroups.push(groupname);
+                }
+            }
         }
+
+        res.status(201).json({
+            message: "Group assignment process completed",
+            assignedGroups: assignedGroups,
+            alreadyAssignedGroups: alreadyAssignedGroups,
+        });
     } catch (error) {
         next(error);
     }
@@ -240,4 +247,5 @@ module.exports = {
     updateUserEmail,
     updateUserStatus,
     updateUserPassword,
+    assignGroup,
 };
