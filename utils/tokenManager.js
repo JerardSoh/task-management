@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 
-const createAndSetToken = (res, user) => {
+// Create and set token in cookie
+const createAndSetToken = (req, res, user) => {
     const ipAddress = req.ip;
     const browserType = req.headers["user-agent"];
 
