@@ -7,11 +7,18 @@ const asyncHandler = require("../utils/asyncHandler");
 // Login route: /login
 const login = asyncHandler(async (req, res, next) => {
     const { username, password } = req.body;
+    // Check if user exists
     const [rows] = await db.query("SELECT * FROM users WHERE username = ?", [
         username,
     ]);
     const user = rows[0];
 
+    // Check if status is active
+    if (user && user.status != true) {
+        throw new HttpError("User is not active", 403);
+    }
+
+    // Check if password is correct
     if (user && bcrypt.compareSync(password, user.password)) {
         // Create a token
         const token = jwt.sign(

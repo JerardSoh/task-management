@@ -7,8 +7,7 @@ const {
     viewUserProfile,
     updateUserEmail,
     updateUserPassword,
-    updateUserStatus,
-    assignGroup,
+    updateUserDetails,
 } = require("../controllers/userController");
 
 router.post("/new", createUser);
@@ -18,7 +17,6 @@ router.get("/me", viewMyProfile);
 router.get("/:username", viewUserProfile);
 router.put("/:username/email", updateUserEmail);
 router.put("/:username/password", updateUserPassword);
-router.put("/:username/status", updateUserStatus);
-router.post("/:username/group", assignGroup);
+router.put("/:username/update", updateUserDetails);
 
 module.exports = router;
