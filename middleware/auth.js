@@ -1,16 +1,36 @@
-require("dotenv").config();
+const db = require("../db");
+const HttpError = require("../utils/httpError");
+const asyncHandler = require("../utils/asyncHandler");
 const jwt = require("jsonwebtoken");
 
-const authenticateToken = (req, res, next) => {
-    // Get token from cookie
+// Middleware to authenticate token
+const authenticateToken = asyncHandler(async (req, res, next) => {
     const token = req.cookies.token;
-    if (token == null) return res.sendStatus(401);
+    if (!token) {
+        throw new HttpError("Token not found", 401);
+    }
 
-    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-        if (err) return res.sendStatus(403);
-        req.user = user;
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = decoded;
         next();
-    });
-};
+    } catch (err) {
+        return next(new HttpError("Invalid Token", 403));
+    }
+});
 
-module.exports = authenticateToken;
+// Middleware to check if user is admin
+const checkAdmin = asyncHandler(async (req, res, next) => {
+    const username = req.user.username;
+
+    const [userInAdminGroup] = await db.execute(
+        "SELECT * FROM usergroup WHERE username = ? AND groupname = 'admin'",
+        [username]
+    );
+    if (userInAdminGroup.length === 0) {
+        throw new HttpError("Access denied. User is not an admin.", 403);
+    }
+    next();
+});
+
+module.exports = { authenticateToken, checkAdmin };

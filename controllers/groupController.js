@@ -20,11 +20,11 @@ const createGroup = asyncHandler(async (req, res, next) => {
     if (existingGroup.length > 0) {
         throw new HttpError("Group already exists", 409);
     }
-
     // Create group
     await db.execute("INSERT INTO `groups` (groupname) VALUES (?)", [
         groupname,
     ]);
+
     res.status(201).json({
         success: true,
         message: "Group created successfully",

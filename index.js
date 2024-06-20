@@ -5,15 +5,15 @@ const authRoutes = require("./routes/authRoutes.js");
 const userRoutes = require("./routes/userRoutes.js");
 const groupRoutes = require("./routes/groupRoutes.js");
 const errorHandler = require("./utils/errorHandler");
-const authToken = require("./middleware/auth.js");
+const { authenticateToken, checkAdmin } = require("./middleware/auth");
 const cookieParser = require("cookie-parser");
 
 const app = express();
 
 app.use(bodyParser.json());
 app.use(cookieParser());
-app.use("/user", authToken, userRoutes);
-app.use("/group", authToken, groupRoutes);
+app.use("/user", authenticateToken, userRoutes);
+app.use("/group", authenticateToken, checkAdmin, groupRoutes);
 app.use("/", authRoutes);
 
 app.use(errorHandler);
