@@ -24,7 +24,7 @@ const login = asyncHandler(async (req, res, next) => {
         throw new HttpError("Invalid username or password", 401);
     }
     // Create and set token in cookie
-    const token = createAndSetToken(res, user);
+    const token = createAndSetToken(req, res, user);
 
     res.status(200).json({ success: true, token });
 });
