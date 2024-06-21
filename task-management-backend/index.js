@@ -1,5 +1,6 @@
 require("dotenv").config(); // Load environment variables
 const express = require("express");
+const path = require("path");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const cors = require("cors"); // CORS handling
@@ -30,6 +31,18 @@ app.use("/", authRoutes);
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 3000;
+
+// Serve static files from the React app
+app.use(
+    express.static(path.join(__dirname, "../task-management-frontend/build"))
+);
+
+// Handle any requests that don't match the API routes
+app.get("*", (req, res) => {
+    res.sendFile(
+        path.join(__dirname, "../task-management-frontend/build", "index.html")
+    );
+});
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
