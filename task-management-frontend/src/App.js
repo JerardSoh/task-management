@@ -1,6 +1,7 @@
 import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import LoginComponent from "./components/LoginComponent";
+import HomePage from "./components/HomePage";
 
 const App = () => {
     return (
@@ -8,7 +9,7 @@ const App = () => {
             <div>
                 <Routes>
                     <Route path="/login" element={<LoginComponent />} />
-                    {/* Add more routes here */}
+                    <Route path="/home" element={<HomePage />} />
                 </Routes>
             </div>
         </Router>

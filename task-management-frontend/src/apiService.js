@@ -20,3 +20,12 @@ export async function login(username, password) {
         );
     }
 }
+
+export async function logout() {
+    try {
+        const response = await api.post(`/logout`);
+        return response.data;
+    } catch (error) {
+        throw new Error("Logout failed.");
+    }
+}
