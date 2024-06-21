@@ -26,15 +26,6 @@ app.use(helmet());
 // Enable CORS (restrict origins in production)
 app.use(cors({ origin: process.env.CORS_ORIGIN || "*" }));
 
-// Rate limiting to prevent brute force attacks
-const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // limit each IP to 100 requests per windowMs
-    message:
-        "Too many requests from this IP, please try again after 15 minutes",
-});
-app.use(limiter);
-
 // Routes
 app.use("/user", authenticateToken, userRoutes);
 app.use("/group", authenticateToken, checkAdmin, groupRoutes);
