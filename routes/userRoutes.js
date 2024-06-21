@@ -10,11 +10,14 @@ const {
 } = require("../controllers/userController");
 const { checkAdmin } = require("../middleware/auth");
 
-router.post("/new", checkAdmin, createUser);
-router.get("/all", checkAdmin, getUsers);
-router.get("/me", viewMyProfile);
-router.put("/me/email", updateUserEmail);
-router.put("/me/password", updateUserPassword);
-router.put("/:username/update", checkAdmin, updateUserDetails);
+// Admin-protected routes
+router.post("/new", checkAdmin, createUser); // Create a new user
+router.get("/all", checkAdmin, getUsers); // Get all users
+router.put("/:username/update", checkAdmin, updateUserDetails); // Update user details
+
+// User self-service routes
+router.get("/me", viewMyProfile); // View own profile
+router.put("/me/email", updateUserEmail); // Update own email
+router.put("/me/password", updateUserPassword); // Update own password
 
 module.exports = router;

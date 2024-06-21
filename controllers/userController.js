@@ -3,227 +3,12 @@ const db = require("../db");
 const HttpError = require("../utils/httpError");
 const asyncHandler = require("../utils/asyncHandler");
 
-// Create a new user route: /user/new
-const createUser = asyncHandler(async (req, res, next) => {
-    const { username, password, email, status, groupnames } = req.body;
-
-    // Check if user already exists
-    const [existingUser] = await db.execute(
-        "SELECT username FROM users WHERE username = ?",
-        [username]
-    );
-    if (existingUser.length > 0) {
-        throw new HttpError("User already exists", 409);
-    }
-    // Password validation
-    if (!validatePassword(password)) {
-        throw new HttpError(
-            "Password must contain at least one number, one letter, and one special character, and be 8-10 characters long.",
-            400
-        );
-    }
-
-    // Hashing password
-    const hashedPassword = bcrypt.hashSync(password, 8);
-
-    // Email validation
-    if (!validateEmail(email)) {
-        throw new HttpError("Invalid email address", 400);
-    }
-
-    // Create user
-    await db.execute(
-        "INSERT INTO users (username, password, email, status) VALUES (?, ?, ?, ?)",
-        [username, hashedPassword, email, status]
-    );
-
-    // Add user to group
-    if (groupnames && Array.isArray(groupnames)) {
-        for (const groupname of groupnames) {
-            await db.execute(
-                "INSERT INTO usergroup (username, groupname) VALUES (?, ?)",
-                [username, groupname]
-            );
-        }
-    }
-
-    res.status(201).json({
-        success: true,
-        message: "User created successfully",
-    });
-});
-
-// View profile route: /user/me
-const viewMyProfile = asyncHandler(async (req, res, next) => {
-    // Check if req.user is set
-    if (!req.user) {
-        throw new HttpError("User not found", 404);
-    }
-    const username = req.user.username;
-    const [user] = await db.execute(
-        "SELECT username, email FROM users WHERE username = ?",
-        [username]
-    );
-    if (user.length === 0) {
-        throw new HttpError("User not found", 404);
-    }
-    res.status(200).json({ success: true, user: user[0] });
-});
-
-// Get all users route: /user/all
-const getUsers = asyncHandler(async (req, res, next) => {
-    const [users] = await db.query("SELECT username, email, status FROM users");
-    res.status(200).json({ success: true, users });
-});
-
-// Update user email route: /user/me/email
-const updateUserEmail = asyncHandler(async (req, res, next) => {
-    // Check if req.user is set
-    if (!req.user) {
-        throw new HttpError("User not found", 404);
-    }
-    const username = req.user.username;
-    const { email } = req.body;
-    // Email validation
-    if (!validateEmail(email)) {
-        throw new HttpError("Invalid email address", 400);
-    }
-    // Update email
-    await db.execute("UPDATE users SET email = ? WHERE username = ?", [
-        email,
-        username,
-    ]);
-    res.status(200).json({
-        success: true,
-        message: "Email updated successfully",
-    });
-});
-
-// Update user password route: /user/me/password
-const updateUserPassword = asyncHandler(async (req, res, next) => {
-    // Check if req.user is set
-    if (!req.user) {
-        throw new HttpError("User not found", 404);
-    }
-    const username = req.user.username;
-    const { password } = req.body;
-
-    // Password validation
-    if (!validatePassword(password)) {
-        throw new HttpError(
-            "Password must contain at least one number, one letter, and one special character, and be 8-10 characters long.",
-            400
-        );
-    }
-
-    // Hashing password
-    const hashedPassword = bcrypt.hashSync(password, 8);
-
-    await db.execute("UPDATE users SET password = ? WHERE username = ?", [
-        hashedPassword,
-        username,
-    ]);
-    res.status(200).json({
-        success: true,
-        message: "Password updated successfully",
-    });
-});
-
-// Update user details (password, email, status, group) route: /user/:username/update
-const updateUserDetails = asyncHandler(async (req, res, next) => {
-    const username = req.params.username;
-    const { password, email, status, groupnames } = req.body;
-
-    // Password validation
-    if (password && !validatePassword(password)) {
-        throw new HttpError(
-            "Password must contain at least one number, one letter, and one special character, and be 8-10 characters long.",
-            400
-        );
-    }
-    // Hashing password
-    const hashedPassword = password ? bcrypt.hashSync(password, 8) : undefined;
-    // Update password
-    if (password) {
-        await db.execute("UPDATE users SET password = ? WHERE username = ?", [
-            hashedPassword,
-            username,
-        ]);
-    }
-
-    // Email validation
-    if (email && !validateEmail(email)) {
-        throw new HttpError("Invalid email address", 400);
-    }
-    // Update email
-    if (email) {
-        await db.execute("UPDATE users SET email = ? WHERE username = ?", [
-            email,
-            username,
-        ]);
-    }
-
-    // Update status
-    if (status !== undefined) {
-        await db.execute("UPDATE users SET status = ? WHERE username = ?", [
-            status,
-            username,
-        ]);
-    }
-
-    // Check if groupname in groupnames exist in groups table
-    if (Array.isArray(groupnames)) {
-        for (const groupname of groupnames) {
-            const [group] = await db.execute(
-                "SELECT groupname FROM `groups` WHERE groupname = ?",
-                [groupname]
-            );
-            if (group.length === 0) {
-                throw new HttpError("Group does not exist", 404);
-            }
-        }
-    }
-
-    // Remove user from group
-    if (Array.isArray(groupnames)) {
-        const [usergroups] = await db.execute(
-            "SELECT groupname FROM usergroup WHERE username = ?",
-            [username]
-        );
-        for (const usergroup of usergroups) {
-            if (!groupnames.includes(usergroup)) {
-                await db.execute(
-                    "DELETE FROM usergroup WHERE username = ? AND groupname = ?",
-                    [username, usergroup.groupname]
-                );
-            }
-        }
-    }
-
-    // Add user to group
-    if (Array.isArray(groupnames)) {
-        for (const groupname of groupnames) {
-            // Check if user is already in the group
-            const [userInGroup] = await db.execute(
-                "SELECT * FROM usergroup WHERE username = ? AND groupname = ?",
-                [username, groupname]
-            );
-
-            // If user is not in the group, add them
-            if (userInGroup.length === 0) {
-                await db.execute(
-                    "INSERT INTO usergroup (username, groupname) VALUES (?, ?)",
-                    [username, groupname]
-                );
-            }
-        }
-    }
-
-    res.status(200).json({
-        success: true,
-        message: "User details updated successfully",
-    });
-});
+// Constants for HTTP status codes
+const STATUS_OK = 200;
+const STATUS_CREATED = 201;
+const STATUS_BAD_REQUEST = 400;
+const STATUS_NOT_FOUND = 404;
+const STATUS_CONFLICT = 409;
 
 // Validate email
 const validateEmail = (email) => {
@@ -237,6 +22,251 @@ const validatePassword = (password) => {
         /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,10}$/;
     return passwordRegex.test(password);
 };
+
+// Check if user exists
+const checkUserExists = async (username, connection) => {
+    const [existingUser] = await connection.execute(
+        "SELECT username FROM users WHERE username = ?",
+        [username]
+    );
+    if (existingUser.length > 0) {
+        throw new HttpError("User already exists", STATUS_CONFLICT);
+    }
+};
+
+// Create a new user route: /user/new
+const createUser = asyncHandler(async (req, res, next) => {
+    const { username, password, email, status, groupnames } = req.body;
+    if (!validatePassword(password)) {
+        throw new HttpError(
+            "Password must contain at least one number, one letter, and one special character, and be 8-10 characters long.",
+            STATUS_BAD_REQUEST
+        );
+    }
+    if (!validateEmail(email)) {
+        throw new HttpError("Invalid email address", STATUS_BAD_REQUEST);
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 8);
+    const connection = await db.getConnection();
+
+    try {
+        await connection.beginTransaction();
+        await checkUserExists(username, connection);
+
+        // Create user
+        await connection.execute(
+            "INSERT INTO users (username, password, email, status) VALUES (?, ?, ?, ?)",
+            [username, hashedPassword, email, status]
+        );
+
+        // Add user to group
+        if (groupnames && Array.isArray(groupnames)) {
+            for (const groupname of groupnames) {
+                await connection.execute(
+                    "INSERT INTO usergroup (username, groupname) VALUES (?, ?)",
+                    [username, groupname]
+                );
+            }
+        }
+
+        await connection.commit();
+
+        res.status(STATUS_CREATED).json({
+            success: true,
+            message: "User created successfully",
+        });
+    } catch (error) {
+        await connection.rollback();
+        throw error;
+    } finally {
+        connection.release();
+    }
+});
+
+// View profile route: /user/me
+const viewMyProfile = asyncHandler(async (req, res, next) => {
+    // Check if req.user is set
+    if (!req.user) {
+        throw new HttpError("User not found", STATUS_NOT_FOUND);
+    }
+    const username = req.user.username;
+    const [user] = await db.execute(
+        "SELECT username, email FROM users WHERE username = ?",
+        [username]
+    );
+    if (user.length === 0) {
+        throw new HttpError("User not found", STATUS_NOT_FOUND);
+    }
+    res.status(STATUS_OK).json({ success: true, user: user[0] });
+});
+
+// Get all users route: /user/all
+const getUsers = asyncHandler(async (req, res, next) => {
+    const [users] = await db.query("SELECT username, email, status FROM users");
+    res.status(STATUS_OK).json({ success: true, users });
+});
+
+// Update user email route: /user/me/email
+const updateUserEmail = asyncHandler(async (req, res, next) => {
+    // Check if req.user is set
+    if (!req.user) {
+        throw new HttpError("User not found", STATUS_NOT_FOUND);
+    }
+    const username = req.user.username;
+    const { email } = req.body;
+
+    // Email validation
+    if (!validateEmail(email)) {
+        throw new HttpError("Invalid email address", STATUS_BAD_REQUEST);
+    }
+    // Update email
+    await db.execute("UPDATE users SET email = ? WHERE username = ?", [
+        email,
+        username,
+    ]);
+    res.status(STATUS_OK).json({
+        success: true,
+        message: "Email updated successfully",
+    });
+});
+
+// Update user password route: /user/me/password
+const updateUserPassword = asyncHandler(async (req, res, next) => {
+    // Check if req.user is set
+    if (!req.user) {
+        throw new HttpError("User not found", STATUS_NOT_FOUND);
+    }
+    const username = req.user.username;
+    const { password } = req.body;
+
+    // Password validation
+    if (!validatePassword(password)) {
+        throw new HttpError(
+            "Password must contain at least one number, one letter, and one special character, and be 8-10 characters long.",
+            STATUS_BAD_REQUEST
+        );
+    }
+
+    // Hashing password
+    const hashedPassword = await bcrypt.hash(password, 8);
+
+    await db.execute("UPDATE users SET password = ? WHERE username = ?", [
+        hashedPassword,
+        username,
+    ]);
+    res.status(STATUS_OK).json({
+        success: true,
+        message: "Password updated successfully",
+    });
+});
+
+// Update user details (password, email, status, group) route: /user/:username/update
+const updateUserDetails = asyncHandler(async (req, res, next) => {
+    const username = req.params.username;
+    const { password, email, status, groupnames } = req.body;
+
+    const connection = await db.getConnection();
+
+    try {
+        await connection.beginTransaction();
+
+        // Password validation and update
+        if (password) {
+            if (!validatePassword(password)) {
+                throw new HttpError(
+                    "Password must contain at least one number, one letter, and one special character, and be 8-10 characters long.",
+                    STATUS_BAD_REQUEST
+                );
+            }
+            const hashedPassword = password
+                ? await bcrypt.hash(password, 8)
+                : undefined;
+
+            await connection.execute(
+                "UPDATE users SET password = ? WHERE username = ?",
+                [hashedPassword, username]
+            );
+        }
+
+        // Email validation and update
+        if (email) {
+            if (!validateEmail(email)) {
+                throw new HttpError(
+                    "Invalid email address",
+                    STATUS_BAD_REQUEST
+                );
+            }
+            await connection.execute(
+                "UPDATE users SET email = ? WHERE username = ?",
+                [email, username]
+            );
+        }
+
+        // Update status
+        if (status !== undefined) {
+            await connection.execute(
+                "UPDATE users SET status = ? WHERE username = ?",
+                [status, username]
+            );
+        }
+        // Check and update user groups
+        if (Array.isArray(groupnames)) {
+            // Check if groupnames exist in the groups table
+            for (const groupname of groupnames) {
+                const [group] = await connection.execute(
+                    "SELECT groupname FROM `groups` WHERE groupname = ?",
+                    [groupname]
+                );
+                if (group.length === 0) {
+                    throw new HttpError(
+                        "Group does not exist",
+                        STATUS_NOT_FOUND
+                    );
+                }
+            }
+
+            // Remove user from groups not in the new list
+            const [usergroups] = await connection.execute(
+                "SELECT groupname FROM usergroup WHERE username = ?",
+                [username]
+            );
+            for (const usergroup of usergroups) {
+                if (!groupnames.includes(usergroup.groupname)) {
+                    await connection.execute(
+                        "DELETE FROM usergroup WHERE username = ? AND groupname = ?",
+                        [username, usergroup.groupname]
+                    );
+                }
+            }
+
+            // Add user to new groups
+            for (const groupname of groupnames) {
+                const [userInGroup] = await connection.execute(
+                    "SELECT * FROM usergroup WHERE username = ? AND groupname = ?",
+                    [username, groupname]
+                );
+                if (userInGroup.length === 0) {
+                    await connection.execute(
+                        "INSERT INTO usergroup (username, groupname) VALUES (?, ?)",
+                        [username, groupname]
+                    );
+                }
+            }
+        }
+        await connection.commit();
+
+        res.status(STATUS_OK).json({
+            success: true,
+            message: "User details updated successfully",
+        });
+    } catch (error) {
+        await connection.rollback();
+        throw error;
+    } finally {
+        connection.release();
+    }
+});
 
 module.exports = {
     createUser,
