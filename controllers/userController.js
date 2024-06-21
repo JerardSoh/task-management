@@ -171,6 +171,19 @@ const updateUserDetails = asyncHandler(async (req, res, next) => {
         ]);
     }
 
+    // Check if groupname in groupnames exist in groups table
+    if (Array.isArray(groupnames)) {
+        for (const groupname of groupnames) {
+            const [group] = await db.execute(
+                "SELECT groupname FROM `groups` WHERE groupname = ?",
+                [groupname]
+            );
+            if (group.length === 0) {
+                throw new HttpError("Group does not exist", 404);
+            }
+        }
+    }
+
     // Remove user from group
     if (Array.isArray(groupnames)) {
         const [usergroups] = await db.execute(
