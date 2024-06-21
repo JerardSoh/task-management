@@ -20,7 +20,10 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 
 // Enable CORS (restrict origins in production)
-//app.use(cors({ origin: process.env.CORS_ORIGIN || "*" }));
+app.use(cors({ origin: process.env.CORS_ORIGIN || "*" }));
+
+// Enable preflight requests for all routes
+app.options("*", cors());
 
 // Routes
 app.use("/user", authenticateToken, userRoutes);

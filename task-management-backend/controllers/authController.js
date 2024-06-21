@@ -45,9 +45,9 @@ const login = asyncHandler(async (req, res, next) => {
     }
 
     // Create and set token in cookie
-    const token = createAndSetToken(req, res, user);
+    createAndSetToken(req, res, user);
 
-    res.status(200).json({ success: true, token });
+    res.status(200).json({ success: true });
 });
 
 // Logout route: /logout
