@@ -7,7 +7,6 @@ const { createAndSetToken } = require("../utils/tokenManager");
 
 // Constants for HTTP status codes
 const STATUS_OK = 200;
-const STATUS_CREATED = 201;
 const STATUS_UNAUTHORIZED = 401;
 const STATUS_FORBIDDEN = 403;
 

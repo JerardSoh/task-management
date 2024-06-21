@@ -63,10 +63,12 @@ const createUser = asyncHandler(async (req, res, next) => {
         // Add user to group
         if (groupnames && Array.isArray(groupnames) && groupnames.length > 0) {
             const values = groupnames.map((groupname) => [username, groupname]);
+            const flattenedValues = values.flat();
+            const placeholders = values.map(() => "(?, ?)").join(", ");
 
             await connection.execute(
-                "INSERT INTO usergroup (username, groupname) VALUES ?",
-                [values]
+                `INSERT INTO usergroup (username, groupname) VALUES ${placeholders}`,
+                flattenedValues
             );
         }
 
