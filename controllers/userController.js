@@ -61,13 +61,13 @@ const createUser = asyncHandler(async (req, res, next) => {
         );
 
         // Add user to group
-        if (groupnames && Array.isArray(groupnames)) {
-            for (const groupname of groupnames) {
-                await connection.execute(
-                    "INSERT INTO usergroup (username, groupname) VALUES (?, ?)",
-                    [username, groupname]
-                );
-            }
+        if (groupnames && Array.isArray(groupnames) && groupnames.length > 0) {
+            const values = groupnames.map((groupname) => [username, groupname]);
+
+            await connection.execute(
+                "INSERT INTO usergroup (username, groupname) VALUES ?",
+                [values]
+            );
         }
 
         await connection.commit();
@@ -103,8 +103,16 @@ const viewMyProfile = asyncHandler(async (req, res, next) => {
 
 // Get all users route: /user/all
 const getUsers = asyncHandler(async (req, res, next) => {
-    const [users] = await db.query("SELECT username, email, status FROM users");
-    res.status(STATUS_OK).json({ success: true, users });
+    const [users] = await db.query(
+        "SELECT users.username, users.email, users.status, GROUP_CONCAT(usergroup.groupname) AS `groups` FROM users LEFT JOIN usergroup ON users.username = usergroup.username GROUP BY users.username"
+    );
+
+    // Transform the result to convert group strings to arrays
+    const result = users.map((user) => ({
+        ...user,
+        groups: user.groups ? user.groups.split(",") : [],
+    }));
+    res.status(STATUS_OK).json({ success: true, result });
 });
 
 // Update user email route: /user/me/email
@@ -210,48 +218,43 @@ const updateUserDetails = asyncHandler(async (req, res, next) => {
                 [status, username]
             );
         }
-        // Check and update user groups
+        // Update user groups
         if (Array.isArray(groupnames)) {
-            // Check if groupnames exist in the groups table
-            for (const groupname of groupnames) {
-                const [group] = await connection.execute(
-                    "SELECT groupname FROM `groups` WHERE groupname = ?",
-                    [groupname]
-                );
-                if (group.length === 0) {
-                    throw new HttpError(
-                        "Group does not exist",
-                        STATUS_NOT_FOUND
-                    );
-                }
-            }
-
-            // Remove user from groups not in the new list
             const [usergroups] = await connection.execute(
                 "SELECT groupname FROM usergroup WHERE username = ?",
                 [username]
             );
-            for (const usergroup of usergroups) {
-                if (!groupnames.includes(usergroup.groupname)) {
-                    await connection.execute(
-                        "DELETE FROM usergroup WHERE username = ? AND groupname = ?",
-                        [username, usergroup.groupname]
-                    );
-                }
+
+            const currentGroups = usergroups.map((group) => group.groupname);
+            const groupsToRemove = currentGroups.filter(
+                (group) => !groupnames.includes(group)
+            );
+            const groupsToAdd = groupnames.filter(
+                (group) => !currentGroups.includes(group)
+            );
+
+            // Remove user from old groups in bulk
+            if (groupsToRemove.length > 0) {
+                const removePlaceholders = groupsToRemove
+                    .map(() => "?")
+                    .join(",");
+                await connection.execute(
+                    `DELETE FROM usergroup WHERE username = ? AND groupname IN (${removePlaceholders})`,
+                    [username, ...groupsToRemove]
+                );
             }
 
-            // Add user to new groups
-            for (const groupname of groupnames) {
-                const [userInGroup] = await connection.execute(
-                    "SELECT * FROM usergroup WHERE username = ? AND groupname = ?",
-                    [username, groupname]
+            // Add user to new groups in bulk
+            if (groupsToAdd.length > 0) {
+                const placeholders = groupsToAdd.map(() => "(?, ?)").join(", ");
+                const addValues = groupsToAdd.flatMap((group) => [
+                    username,
+                    group,
+                ]);
+                await connection.execute(
+                    `INSERT INTO usergroup (username, groupname) VALUES ${placeholders}`,
+                    addValues
                 );
-                if (userInGroup.length === 0) {
-                    await connection.execute(
-                        "INSERT INTO usergroup (username, groupname) VALUES (?, ?)",
-                        [username, groupname]
-                    );
-                }
             }
         }
         await connection.commit();

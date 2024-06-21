@@ -2,8 +2,6 @@ require("dotenv").config(); // Load environment variables
 const express = require("express");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
-const helmet = require("helmet"); // Security headers
-const rateLimit = require("express-rate-limit"); // Rate limiting
 const cors = require("cors"); // CORS handling
 
 const authRoutes = require("./routes/authRoutes.js");
@@ -20,11 +18,8 @@ app.use(bodyParser.json());
 // Middleware for cookie parsing
 app.use(cookieParser());
 
-// Set security headers
-app.use(helmet());
-
 // Enable CORS (restrict origins in production)
-app.use(cors({ origin: process.env.CORS_ORIGIN || "*" }));
+//app.use(cors({ origin: process.env.CORS_ORIGIN || "*" }));
 
 // Routes
 app.use("/user", authenticateToken, userRoutes);
