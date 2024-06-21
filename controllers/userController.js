@@ -182,6 +182,22 @@ const updateUserDetails = asyncHandler(async (req, res, next) => {
         ]);
     }
 
+    // Remove user from group
+    if (Array.isArray(groupnames)) {
+        const [usergroups] = await db.execute(
+            "SELECT groupname FROM usergroup WHERE username = ?",
+            [username]
+        );
+        for (const usergroup of usergroups) {
+            if (!groupnames.includes(usergroup)) {
+                await db.execute(
+                    "DELETE FROM usergroup WHERE username = ? AND groupname = ?",
+                    [username, usergroup.groupname]
+                );
+            }
+        }
+    }
+
     // Add user to group
     if (Array.isArray(groupnames)) {
         for (const groupname of groupnames) {
