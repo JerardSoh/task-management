@@ -29,4 +29,10 @@ const login = asyncHandler(async (req, res, next) => {
     res.status(200).json({ success: true, token });
 });
 
-module.exports = { login };
+// Logout route: /logout
+const logout = asyncHandler(async (req, res, next) => {
+    res.clearCookie("token", "", { expires: new Date(0) });
+    res.status(200).json({ success: true, message: "Logged out successfully" });
+});
+
+module.exports = { login, logout };
