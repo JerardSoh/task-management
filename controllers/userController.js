@@ -23,6 +23,12 @@ const validatePassword = (password) => {
     return passwordRegex.test(password);
 };
 
+// Validate username
+const validateUsername = (username) => {
+    const usernameRegex = /^[a-zA-Z0-9_]{4,32}$/;
+    return usernameRegex.test(username);
+};
+
 // Check if user exists
 const checkUserExists = async (username, connection) => {
     const [existingUser] = await connection.execute(
@@ -37,12 +43,21 @@ const checkUserExists = async (username, connection) => {
 // Create a new user route: /user/new
 const createUser = asyncHandler(async (req, res, next) => {
     const { username, password, email, status, groupnames } = req.body;
+    // Username validation
+    if (!validateUsername(username)) {
+        throw new HttpError(
+            "Username must be 4-32 characters long and can only contain alphanumerics or '_'.",
+            STATUS_BAD_REQUEST
+        );
+    }
+    // Password validation
     if (!validatePassword(password)) {
         throw new HttpError(
             "Password must contain at least one number, one letter, and one special character, and be 8-10 characters long.",
             STATUS_BAD_REQUEST
         );
     }
+    // Email validation
     if (!validateEmail(email)) {
         throw new HttpError("Invalid email address", STATUS_BAD_REQUEST);
     }
