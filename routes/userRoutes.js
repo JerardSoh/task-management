@@ -4,19 +4,18 @@ const {
     createUser,
     getUsers,
     viewMyProfile,
-    viewUserProfile,
     updateUserEmail,
     updateUserPassword,
     updateUserDetails,
 } = require("../controllers/userController");
+const { checkAdmin } = require("../middleware/auth");
 
 router.post("/new", createUser);
 
-router.get("/all", getUsers);
+router.get("/all", checkAdmin, getUsers);
 router.get("/me", viewMyProfile);
-router.get("/:username", viewUserProfile);
-router.put("/:username/email", updateUserEmail);
-router.put("/:username/password", updateUserPassword);
-router.put("/:username/update", updateUserDetails);
+router.put("/me/email", updateUserEmail);
+router.put("/me/password", updateUserPassword);
+router.put("/:username/update", checkAdmin, updateUserDetails);
 
 module.exports = router;

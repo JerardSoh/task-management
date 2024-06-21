@@ -55,7 +55,11 @@ const createUser = asyncHandler(async (req, res, next) => {
 
 // View profile route: /user/me
 const viewMyProfile = asyncHandler(async (req, res, next) => {
-    const username = req.user.username; // Assuming req.user is populated by authentication middleware
+    // Check if req.user is set
+    if (!req.user) {
+        throw new HttpError("User not found", 404);
+    }
+    const username = req.user.username;
     const [user] = await db.execute(
         "SELECT username, email FROM users WHERE username = ?",
         [username]
@@ -72,32 +76,13 @@ const getUsers = asyncHandler(async (req, res, next) => {
     res.status(200).json({ success: true, users });
 });
 
-// View profile route: /user/:username
-const viewUserProfile = asyncHandler(async (req, res, next) => {
-    const username = req.params.username;
-    // Get user details
-    const [user] = await db.execute(
-        "SELECT username, email, status FROM users WHERE username = ?",
-        [username]
-    );
-
-    // Check if user exists
-    if (user.length === 0) {
+// Update user email route: /user/me/email
+const updateUserEmail = asyncHandler(async (req, res, next) => {
+    // Check if req.user is set
+    if (!req.user) {
         throw new HttpError("User not found", 404);
     }
-
-    // Get user groups
-    const [usergroups] = await db.execute(
-        "SELECT groupname FROM usergroup WHERE username = ?",
-        [username]
-    );
-
-    res.status(200).json({ success: true, user: user[0], groups: usergroups });
-});
-
-// Update user email route: /user/:username/email
-const updateUserEmail = asyncHandler(async (req, res, next) => {
-    const username = req.params.username;
+    const username = req.user.username;
     const { email } = req.body;
     // Email validation
     if (!validateEmail(email)) {
@@ -114,9 +99,13 @@ const updateUserEmail = asyncHandler(async (req, res, next) => {
     });
 });
 
-// Update user password route: /user/:username/password
+// Update user password route: /user/me/password
 const updateUserPassword = asyncHandler(async (req, res, next) => {
-    const username = req.params.username;
+    // Check if req.user is set
+    if (!req.user) {
+        throw new HttpError("User not found", 404);
+    }
+    const username = req.user.username;
     const { password } = req.body;
 
     // Password validation
@@ -240,7 +229,6 @@ module.exports = {
     createUser,
     getUsers,
     viewMyProfile,
-    viewUserProfile,
     updateUserEmail,
     updateUserPassword,
     updateUserDetails,
