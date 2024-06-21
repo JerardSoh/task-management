@@ -10,8 +10,7 @@ const {
 } = require("../controllers/userController");
 const { checkAdmin } = require("../middleware/auth");
 
-router.post("/new", createUser);
-
+router.post("/new", checkAdmin, createUser);
 router.get("/all", checkAdmin, getUsers);
 router.get("/me", viewMyProfile);
 router.put("/me/email", updateUserEmail);
