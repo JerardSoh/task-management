@@ -9,6 +9,7 @@ const STATUS_CREATED = 201;
 const STATUS_BAD_REQUEST = 400;
 const STATUS_NOT_FOUND = 404;
 const STATUS_CONFLICT = 409;
+const STATUS_FORBIDDEN = 403;
 
 // Validate email
 const validateEmail = (email) => {
@@ -191,6 +192,14 @@ const updateUserPassword = asyncHandler(async (req, res, next) => {
 const updateUserDetails = asyncHandler(async (req, res, next) => {
     const username = req.params.username;
     const { password, email, status, groupnames } = req.body;
+
+    // Prevent update if the username is 'admin'
+    if (username === "admin") {
+        throw new HttpError(
+            "Updating the admin account is not allowed.",
+            STATUS_FORBIDDEN
+        );
+    }
 
     const connection = await db.getConnection();
 

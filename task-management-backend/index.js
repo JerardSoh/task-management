@@ -9,7 +9,7 @@ const authRoutes = require("./routes/authRoutes.js");
 const userRoutes = require("./routes/userRoutes.js");
 const groupRoutes = require("./routes/groupRoutes.js");
 const errorHandler = require("./utils/errorHandler");
-const { authenticateToken, checkGroup } = require("./middleware/auth");
+const { authenticateToken, requireGroup } = require("./middleware/auth");
 
 const app = express();
 
@@ -33,7 +33,7 @@ app.options("*", cors());
 
 // Routes
 app.use("/user", authenticateToken, userRoutes);
-app.use("/group", authenticateToken, checkGroup("admin"), groupRoutes);
+app.use("/group", authenticateToken, requireGroup("admin"), groupRoutes);
 app.use("/", authRoutes);
 
 // Error handling middleware

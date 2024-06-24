@@ -7,6 +7,20 @@ const jwt = require("jsonwebtoken");
 const STATUS_UNAUTHORIZED = 401;
 const STATUS_FORBIDDEN = 403;
 
+// Function to check if user is in a group
+const checkGroup = async (username, groupname) => {
+    try {
+        const result = await db.query(
+            "SELECT * FROM usergroup WHERE username = ? AND groupname = ?",
+            [username, groupname]
+        );
+        return result.length > 0;
+    } catch (error) {
+        console.error("Error checking group:", error);
+        throw error;
+    }
+};
+
 // Middleware to authenticate token
 const authenticateToken = asyncHandler(async (req, res, next) => {
     const token = req.cookies?.token;
@@ -26,9 +40,9 @@ const authenticateToken = asyncHandler(async (req, res, next) => {
     }
 });
 
-// Middleware to check if user is admin
-const checkGroup = (groupName) =>
-    asyncHandler(async (req, res, next) => {
+// Middleware to require a group
+const requireGroup = (groupname) => {
+    return asyncHandler(async (req, res, next) => {
         const username = req.user.username;
 
         if (!username) {
@@ -37,18 +51,14 @@ const checkGroup = (groupName) =>
                 STATUS_FORBIDDEN
             );
         }
-
-        const [userInGroup] = await db.execute(
-            "SELECT * FROM usergroup WHERE username = ? AND groupname = ?",
-            [username, groupName]
-        );
-        if (userInGroup.length === 0) {
+        const isInGroup = await checkGroup(username, groupname);
+        if (!isInGroup) {
             throw new HttpError(
-                "Access denied. User is not an admin.",
+                "You do not have permission to access this resource",
                 STATUS_FORBIDDEN
             );
         }
         next();
     });
-
-module.exports = { authenticateToken, checkGroup };
+};
+module.exports = { authenticateToken, requireGroup };
