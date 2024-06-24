@@ -50,6 +50,22 @@ const login = asyncHandler(async (req, res, next) => {
     res.status(200).json({ success: true });
 });
 
+// checkAuth route: /auth
+const checkAuth = asyncHandler(async (req, res, next) => {
+    res.status(STATUS_OK).json({
+        success: true,
+        message: "User is authenticated",
+    });
+});
+
+// isAdmin route: /admin
+const isAdmin = asyncHandler(async (req, res, next) => {
+    res.status(STATUS_OK).json({
+        success: true,
+        message: "User is an admin",
+    });
+});
+
 // Logout route: /logout
 const logout = asyncHandler(async (req, res, next) => {
     res.clearCookie("token", "", { expires: new Date(0) });
@@ -59,4 +75,4 @@ const logout = asyncHandler(async (req, res, next) => {
     });
 });
 
-module.exports = { login, logout };
+module.exports = { login, logout, checkAuth, isAdmin };

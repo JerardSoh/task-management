@@ -24,7 +24,7 @@ export async function login(username, password) {
 
 export async function checkAuth() {
     try {
-        const response = await api.get(`/checkAuth`);
+        const response = await api.get(`/auth`);
         return response.data;
     } catch (error) {
         throw new Error("Authentication failed.");
@@ -68,5 +68,14 @@ export async function updatePassword(password) {
         throw new Error(
             error.response.data.message || "Failed to update password."
         );
+    }
+}
+
+export async function checkAdmin() {
+    try {
+        const response = await api.get(`/admin`);
+        return response.data;
+    } catch (error) {
+        throw new Error("Failed to check admin status.");
     }
 }

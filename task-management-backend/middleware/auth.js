@@ -27,24 +27,28 @@ const authenticateToken = asyncHandler(async (req, res, next) => {
 });
 
 // Middleware to check if user is admin
-const checkAdmin = asyncHandler(async (req, res, next) => {
-    const username = req.user.username;
+const checkGroup = (groupName) =>
+    asyncHandler(async (req, res, next) => {
+        const username = req.user.username;
 
-    if (!username) {
-        throw new HttpError("User information is missing", STATUS_FORBIDDEN);
-    }
+        if (!username) {
+            throw new HttpError(
+                "User information is missing",
+                STATUS_FORBIDDEN
+            );
+        }
 
-    const [userInAdminGroup] = await db.execute(
-        "SELECT * FROM usergroup WHERE username = ? AND groupname = 'admin'",
-        [username]
-    );
-    if (userInAdminGroup.length === 0) {
-        throw new HttpError(
-            "Access denied. User is not an admin.",
-            STATUS_FORBIDDEN
+        const [userInGroup] = await db.execute(
+            "SELECT * FROM usergroup WHERE username = ? AND groupname = ?",
+            [username, groupName]
         );
-    }
-    next();
-});
+        if (userInGroup.length === 0) {
+            throw new HttpError(
+                "Access denied. User is not an admin.",
+                STATUS_FORBIDDEN
+            );
+        }
+        next();
+    });
 
-module.exports = { authenticateToken, checkAdmin };
+module.exports = { authenticateToken, checkGroup };

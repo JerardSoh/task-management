@@ -8,12 +8,12 @@ const {
     updateUserPassword,
     updateUserDetails,
 } = require("../controllers/userController");
-const { checkAdmin } = require("../middleware/auth");
+const { checkGroup } = require("../middleware/auth");
 
 // Admin-protected routes
-router.post("/new", checkAdmin, createUser); // Create a new user
-router.get("/all", checkAdmin, getUsers); // Get all users
-router.put("/:username/update", checkAdmin, updateUserDetails); // Update user details
+router.post("/new", checkGroup("admin"), createUser); // Create a new user
+router.get("/all", checkGroup("admin"), getUsers); // Get all users
+router.put("/:username/update", checkGroup("admin"), updateUserDetails); // Update user details
 
 // User self-service routes
 router.get("/me", viewMyProfile); // View own profile
