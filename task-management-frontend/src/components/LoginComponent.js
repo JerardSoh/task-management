@@ -14,7 +14,7 @@ const LoginComponent = () => {
         try {
             const data = await login(username, password);
             setMessage(data.message);
-            navigate("/home");
+            navigate("/");
         } catch (error) {
             setMessage(error.message);
         }
@@ -22,7 +22,8 @@ const LoginComponent = () => {
 
     return (
         <div style={{ textAlign: "center", marginTop: "50px" }}>
-            <h2>Login</h2>
+            <h2>Task Management System</h2>
+            <p className="error-message">{message}</p>
             <input
                 type="text"
                 placeholder="Username"
@@ -48,7 +49,6 @@ const LoginComponent = () => {
             <button onClick={handleLogin} style={{ padding: "10px 20px" }}>
                 Login
             </button>
-            <p>{message}</p>
         </div>
     );
 };

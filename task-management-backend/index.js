@@ -19,8 +19,14 @@ app.use(bodyParser.json());
 // Middleware for cookie parsing
 app.use(cookieParser());
 
+// Configure CORS
+const corsOptions = {
+    origin: process.env.CORS_ORIGIN || "*",
+    credentials: true, // Allow credentials (cookies)
+};
+
 // Enable CORS (restrict origins in production)
-app.use(cors({ origin: process.env.CORS_ORIGIN || "*" }));
+app.use(cors(corsOptions));
 
 // Enable preflight requests for all routes
 app.options("*", cors());

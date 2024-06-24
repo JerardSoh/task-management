@@ -6,7 +6,6 @@ import { useNavigate } from "react-router-dom";
 const NavigationBar = () => {
     const navigate = useNavigate();
 
-    // Add a function to handle logout
     const handleLogout = async () => {
         try {
             await logout();
@@ -26,7 +25,7 @@ const NavigationBar = () => {
             }}
         >
             <div>
-                <Link to="/home" style={{ marginRight: "10px" }}>
+                <Link to="/" style={{ marginRight: "10px" }}>
                     Home
                 </Link>
                 <Link to="/profile" style={{ marginRight: "10px" }}>

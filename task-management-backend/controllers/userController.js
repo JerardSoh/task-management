@@ -153,6 +153,7 @@ const updateUserEmail = asyncHandler(async (req, res, next) => {
     res.status(STATUS_OK).json({
         success: true,
         message: "Email updated successfully",
+        email,
     });
 });
 
