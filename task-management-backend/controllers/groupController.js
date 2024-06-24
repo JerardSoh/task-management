@@ -9,8 +9,11 @@ const STATUS_CONFLICT = 409;
 
 // Get all groups route: /group/all
 const getGroups = asyncHandler(async (req, res, next) => {
-    const [groups] = await db.execute("SELECT * FROM `groups`");
-    res.status(STATUS_OK).json({ success: true, groups });
+    const [groups] = await db.execute("SELECT groupname FROM `groups`");
+    res.status(STATUS_OK).json({
+        success: true,
+        groups: groups.map((group) => group.groupname),
+    });
 });
 
 // Create new group route: /group/new

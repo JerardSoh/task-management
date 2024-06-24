@@ -79,3 +79,31 @@ export async function checkAdmin() {
         throw new Error("Failed to check admin status.");
     }
 }
+
+export async function getAllUsers() {
+    try {
+        const response = await api.get(`/user/all`);
+        return response.data;
+    } catch (error) {
+        throw new Error("Failed to get all users.");
+    }
+}
+
+export async function updateUserDetails(username, user) {
+    try {
+        const response = await api.put(`/user/${username}/update`, user);
+        return response.data;
+    } catch (error) {
+        throw new Error("Failed to update user.");
+    }
+}
+
+export async function getAllGroups() {
+    try {
+        const response = await api.get(`/group/all`);
+        const groupNames = response.data.groups.map((group) => group.groupname);
+        return groupNames;
+    } catch (error) {
+        throw new Error("Failed to get all groups.");
+    }
+}

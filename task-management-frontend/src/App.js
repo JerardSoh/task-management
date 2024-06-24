@@ -11,6 +11,7 @@ import HomePage from "./components/HomePage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import NavigationBar from "./components/NavigationBar";
 import ProfilePage from "./components/ProfilePage";
+import UserManagementPage from "./components/UserManagementPage";
 
 const App = () => {
     return (
@@ -30,6 +31,10 @@ const App = () => {
                                         element={<ProfilePage />}
                                     />
                                     {/* Redirect all other paths to HomePage, adjust as needed */}
+                                    <Route
+                                        path="/user-management"
+                                        element={<UserManagementPage />}
+                                    />
                                     <Route
                                         path="*"
                                         element={<Navigate to="/" />}
