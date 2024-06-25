@@ -191,7 +191,7 @@ const updateUserPassword = asyncHandler(async (req, res, next) => {
 // Update user details (password, email, status, group) route: /user/:username/update
 const updateUserDetails = asyncHandler(async (req, res, next) => {
     const username = req.params.username;
-    const { password, email, status, groupnames } = req.body;
+    const { password, email, status, groups } = req.body;
 
     // Prevent update if the username is 'admin'
     if (username === "admin") {
@@ -246,7 +246,7 @@ const updateUserDetails = asyncHandler(async (req, res, next) => {
             );
         }
         // Update user groups
-        if (Array.isArray(groupnames)) {
+        if (Array.isArray(groups)) {
             const [usergroups] = await connection.execute(
                 "SELECT groupname FROM usergroup WHERE username = ?",
                 [username]
@@ -254,9 +254,9 @@ const updateUserDetails = asyncHandler(async (req, res, next) => {
 
             const currentGroups = usergroups.map((group) => group.groupname);
             const groupsToRemove = currentGroups.filter(
-                (group) => !groupnames.includes(group)
+                (group) => !groups.includes(group)
             );
-            const groupsToAdd = groupnames.filter(
+            const groupsToAdd = groups.filter(
                 (group) => !currentGroups.includes(group)
             );
 

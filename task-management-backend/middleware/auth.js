@@ -10,7 +10,7 @@ const STATUS_FORBIDDEN = 403;
 // Function to check if user is in a group
 const checkGroup = async (username, groupname) => {
     try {
-        const result = await db.query(
+        const [result] = await db.execute(
             "SELECT * FROM usergroup WHERE username = ? AND groupname = ?",
             [username, groupname]
         );
