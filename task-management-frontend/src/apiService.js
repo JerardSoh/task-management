@@ -45,7 +45,13 @@ export async function getUser() {
         const response = await api.get(`/user/me`);
         return response.data;
     } catch (error) {
-        throw new Error(error.response.data.message || "Failed to get user.");
+        if (error.response) {
+            throw new Error(error.response.data.message || "An error occurred");
+        } else if (error.request) {
+            throw new Error("No response from server");
+        } else {
+            throw new Error("Error in setting up the request");
+        }
     }
 }
 
@@ -54,9 +60,13 @@ export async function updateEmail(email) {
         const response = await api.put(`/user/me/email`, { email });
         return response.data;
     } catch (error) {
-        throw new Error(
-            error.response.data.message || "Failed to update email."
-        );
+        if (error.response) {
+            throw new Error(error.response.data.message || "An error occurred");
+        } else if (error.request) {
+            throw new Error("No response from server");
+        } else {
+            throw new Error("Error in setting up the request");
+        }
     }
 }
 
@@ -65,9 +75,13 @@ export async function updatePassword(password) {
         const response = await api.put(`/user/me/password`, { password });
         return response.data;
     } catch (error) {
-        throw new Error(
-            error.response.data.message || "Failed to update password."
-        );
+        if (error.response) {
+            throw new Error(error.response.data.message || "An error occurred");
+        } else if (error.request) {
+            throw new Error("No response from server");
+        } else {
+            throw new Error("Error in setting up the request");
+        }
     }
 }
 
@@ -94,7 +108,13 @@ export async function updateUserDetails(username, user) {
         const response = await api.put(`/user/${username}/update`, user);
         return response.data;
     } catch (error) {
-        throw new Error("Failed to update user.");
+        if (error.response) {
+            throw new Error(error.response.data.message || "An error occurred");
+        } else if (error.request) {
+            throw new Error("No response from server");
+        } else {
+            throw new Error("Error in setting up the request");
+        }
     }
 }
 
@@ -127,6 +147,12 @@ export async function createGroup(group) {
         const response = await api.post(`/group/new`, group);
         return response.data;
     } catch (error) {
-        throw new Error("Failed to create group.");
+        if (error.response) {
+            throw new Error(error.response.data.message || "An error occurred");
+        } else if (error.request) {
+            throw new Error("No response from server");
+        } else {
+            throw new Error("Error in setting up the request");
+        }
     }
 }

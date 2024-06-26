@@ -30,17 +30,6 @@ const validateUsername = (username) => {
     return usernameRegex.test(username);
 };
 
-// Check if user exists
-const checkUserExists = async (username, connection) => {
-    const [existingUser] = await connection.execute(
-        "SELECT username FROM users WHERE username = ?",
-        [username]
-    );
-    if (existingUser.length > 0) {
-        throw new HttpError("User already exists", STATUS_CONFLICT);
-    }
-};
-
 // Create a new user route: /user/new
 const createUser = asyncHandler(async (req, res, next) => {
     const { username, password, email, status, groupnames } = req.body;
@@ -51,6 +40,7 @@ const createUser = asyncHandler(async (req, res, next) => {
             STATUS_BAD_REQUEST
         );
     }
+
     // Password validation
     if (!validatePassword(password)) {
         throw new HttpError(
@@ -59,7 +49,7 @@ const createUser = asyncHandler(async (req, res, next) => {
         );
     }
     // Email validation
-    if (!validateEmail(email)) {
+    if (email && !validateEmail(email)) {
         throw new HttpError("Invalid email address", STATUS_BAD_REQUEST);
     }
 
@@ -68,7 +58,15 @@ const createUser = asyncHandler(async (req, res, next) => {
 
     try {
         await connection.beginTransaction();
-        await checkUserExists(username, connection);
+
+        // Check if user already exists
+        const [existingUser] = await connection.execute(
+            "SELECT username FROM users WHERE username = ?",
+            [username]
+        );
+        if (existingUser.length > 0) {
+            throw new HttpError("Username already exists", STATUS_CONFLICT);
+        }
 
         // Create user
         await connection.execute(
@@ -193,14 +191,6 @@ const updateUserDetails = asyncHandler(async (req, res, next) => {
     const username = req.params.username;
     const { password, email, status, groups } = req.body;
 
-    // Prevent update if the username is 'admin'
-    if (username === "admin") {
-        throw new HttpError(
-            "Updating the admin account is not allowed.",
-            STATUS_FORBIDDEN
-        );
-    }
-
     const connection = await db.getConnection();
 
     try {
@@ -225,18 +215,13 @@ const updateUserDetails = asyncHandler(async (req, res, next) => {
         }
 
         // Email validation and update
-        if (email) {
-            if (!validateEmail(email)) {
-                throw new HttpError(
-                    "Invalid email address",
-                    STATUS_BAD_REQUEST
-                );
-            }
-            await connection.execute(
-                "UPDATE users SET email = ? WHERE username = ?",
-                [email, username]
-            );
+        if (email && !validateEmail(email)) {
+            throw new HttpError("Invalid email address", STATUS_BAD_REQUEST);
         }
+        await connection.execute(
+            "UPDATE users SET email = ? WHERE username = ?",
+            [email, username]
+        );
 
         // Update status
         if (status !== undefined) {

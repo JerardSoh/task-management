@@ -20,12 +20,27 @@ const getGroups = asyncHandler(async (req, res, next) => {
 const createGroup = asyncHandler(async (req, res, next) => {
     const { groupname } = req.body;
 
-    if (
-        !groupname ||
-        typeof groupname !== "string" ||
-        groupname.trim() === ""
-    ) {
-        throw new HttpError("Invalid group name", STATUS_CONFLICT);
+    // Validate group name
+    if (!groupname) {
+        throw new HttpError("Group name is required", STATUS_CONFLICT);
+    }
+
+    if (typeof groupname !== "string") {
+        throw new HttpError("Group name must be a string", STATUS_CONFLICT);
+    }
+
+    if (groupname.trim() === "") {
+        throw new HttpError(
+            "Group name cannot be empty or just whitespace",
+            STATUS_CONFLICT
+        );
+    }
+
+    if (!/^[a-zA-Z0-9_]+$/.test(groupname)) {
+        throw new HttpError(
+            "Invalid group name. Group name can only contain alphanumeric characters and underscores.",
+            STATUS_CONFLICT
+        );
     }
 
     // Check if group already exists
@@ -36,6 +51,7 @@ const createGroup = asyncHandler(async (req, res, next) => {
     if (existingGroup.length > 0) {
         throw new HttpError("Group already exists", STATUS_CONFLICT);
     }
+
     // Create group
     await db.execute("INSERT INTO `groups` (groupname) VALUES (?)", [
         groupname.trim(),

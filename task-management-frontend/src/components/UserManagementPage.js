@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import Select from "react-select";
+import Select, { components } from "react-select";
 import TextEditor from "./TextEditor";
 import {
     getAllUsers,
@@ -22,7 +22,7 @@ const UserManagementPage = () => {
     });
     const [allGroups, setAllGroups] = useState([]);
     const [newGroupName, setNewGroupName] = useState(""); // State for new group name
-    const [errorMessage, setErrorMessage] = useState(""); // State for error message
+    const [message, setMessage] = useState({ type: "", text: "" }); // State for error and success messages
 
     useEffect(() => {
         const fetchData = async () => {
@@ -36,6 +36,7 @@ const UserManagementPage = () => {
                 );
             } catch (error) {
                 console.error("Failed to fetch data:", error);
+                setMessage({ type: "error", text: "Failed to fetch data." });
             }
         };
 
@@ -46,6 +47,7 @@ const UserManagementPage = () => {
         const userToEdit = users.find((user) => user.username === username);
         setOriginalUser({ ...userToEdit }); // Store the original data
         setEditingId(username);
+        setMessage({ type: "", text: "" }); // Clear messages on edit
     };
 
     const handleCancel = () => {
@@ -56,6 +58,7 @@ const UserManagementPage = () => {
         );
         setEditingId(null);
         setOriginalUser(null);
+        setMessage({ type: "", text: "" }); // Clear messages on cancel
     };
 
     const handleUserChange = (username, field, value) => {
@@ -76,8 +79,12 @@ const UserManagementPage = () => {
                 await updateUserDetails(userToSave.username, userToSave);
                 setEditingId(null);
                 setOriginalUser(null); // Clear original data after saving
+                setMessage({
+                    type: "success",
+                    text: "User updated successfully.",
+                }); // Set success message
             } catch (error) {
-                console.error("Failed to save user details:", error);
+                setMessage({ type: "error", text: error.message }); // Set error message from catch block
             }
         }
     };
@@ -98,9 +105,9 @@ const UserManagementPage = () => {
             });
             const users = await getAllUsers();
             setUsers(users);
-            setErrorMessage(""); // Clear any previous error message
+            setMessage({ type: "success", text: "User created successfully." }); // Set success message
         } catch (error) {
-            setErrorMessage(error.message); // Set error message from catch block
+            setMessage({ type: "error", text: error.message }); // Set error message from catch block
         }
     };
 
@@ -113,9 +120,31 @@ const UserManagementPage = () => {
             setAllGroups(
                 groups.map((group) => ({ value: group, label: group }))
             );
+            setMessage({
+                type: "success",
+                text: "Group created successfully.",
+            }); // Set success message
         } catch (error) {
-            console.error("Failed to create group:", error);
+            setMessage({ type: "error", text: error.message }); // Set error message from catch block
         }
+    };
+
+    const customStyles = {
+        multiValueRemove: (base, state) => {
+            if (state.data.value === "admin") {
+                return { ...base, display: "none" };
+            }
+            return base;
+        },
+    };
+
+    // Custom ClearIndicator component to remove the "Remove All" button
+    const ClearIndicator = (props) => {
+        return null;
+    };
+
+    const customComponents = {
+        ClearIndicator,
     };
 
     return (
@@ -132,10 +161,15 @@ const UserManagementPage = () => {
                 <button onClick={handleCreateGroup}>Create</button>
             </div>
 
-            {/* Error Message Display */}
-            {errorMessage && (
-                <div style={{ color: "red", marginBottom: "10px" }}>
-                    {errorMessage}
+            {/* Consolidated Message Display */}
+            {message.text && (
+                <div
+                    style={{
+                        color: message.type === "error" ? "red" : "green",
+                        marginBottom: "10px",
+                    }}
+                >
+                    {message.text}
                 </div>
             )}
 
@@ -218,6 +252,7 @@ const UserManagementPage = () => {
                                         )
                                     )
                                 }
+                                components={customComponents}
                             />
                         </td>
                         <td>
@@ -225,118 +260,122 @@ const UserManagementPage = () => {
                         </td>
                     </tr>
                     {/* Existing Users Rows */}
-                    {users
-                        .filter((user) => user.username !== "admin") // Filter out the user with username "admin"
-                        .map((user) => (
-                            <tr key={user.username}>
-                                <td>{user.username}</td>
-                                <td>
-                                    {editingId === user.username ? (
-                                        <TextEditor
-                                            row={user}
-                                            column={{ key: "password" }}
-                                            placeholder="Enter new password"
-                                            onRowChange={(row) =>
-                                                handleUserChange(
-                                                    user.username,
-                                                    "password",
-                                                    row.password
-                                                )
-                                            }
-                                        />
-                                    ) : (
-                                        "******"
-                                    )}
-                                </td>
-                                <td>
-                                    {editingId === user.username ? (
-                                        <TextEditor
-                                            row={user}
-                                            column={{ key: "email" }}
-                                            placeholder="Enter new email"
-                                            onRowChange={(row) =>
-                                                handleUserChange(
-                                                    user.username,
-                                                    "email",
-                                                    row.email
-                                                )
-                                            }
-                                        />
-                                    ) : (
-                                        user.email
-                                    )}
-                                </td>
-                                <td>
-                                    <input
-                                        type="checkbox"
-                                        checked={user.status}
-                                        disabled={editingId !== user.username}
-                                        onChange={(e) =>
+                    {users.map((user) => (
+                        <tr key={user.username}>
+                            <td>{user.username}</td>
+                            <td>
+                                {editingId === user.username ? (
+                                    <TextEditor
+                                        row={user}
+                                        column={{ key: "password" }}
+                                        placeholder="Enter new password"
+                                        onRowChange={(row) =>
                                             handleUserChange(
                                                 user.username,
-                                                "status",
-                                                e.target.checked
+                                                "password",
+                                                row.password
                                             )
                                         }
                                     />
-                                </td>
-                                <td>
-                                    {editingId === user.username ? (
-                                        <Select
-                                            isMulti
-                                            value={user.groups.map((group) => ({
-                                                value: group,
-                                                label: group,
-                                            }))}
-                                            options={allGroups.filter(
-                                                (group) =>
-                                                    !user.groups.includes(
-                                                        group.value
-                                                    )
-                                            )}
-                                            onChange={(selectedOptions) =>
-                                                handleUserChange(
-                                                    user.username,
-                                                    "groups",
-                                                    selectedOptions.map(
-                                                        (option) => option.value
-                                                    )
-                                                )
-                                            }
-                                        />
-                                    ) : (
-                                        user.groups.join(", ")
-                                    )}
-                                </td>
-                                <td>
-                                    {editingId === user.username ? (
-                                        <>
-                                            <button
-                                                onClick={() =>
-                                                    handleSave(user.username)
-                                                }
-                                            >
-                                                Save
-                                            </button>
-                                            <button
-                                                onClick={handleCancel}
-                                                style={{ marginLeft: "10px" }}
-                                            >
-                                                Cancel
-                                            </button>
-                                        </>
-                                    ) : (
+                                ) : (
+                                    "******"
+                                )}
+                            </td>
+                            <td>
+                                {editingId === user.username ? (
+                                    <TextEditor
+                                        row={user}
+                                        column={{ key: "email" }}
+                                        placeholder="Enter new email"
+                                        onRowChange={(row) =>
+                                            handleUserChange(
+                                                user.username,
+                                                "email",
+                                                row.email
+                                            )
+                                        }
+                                    />
+                                ) : (
+                                    user.email
+                                )}
+                            </td>
+                            <td>
+                                <input
+                                    type="checkbox"
+                                    checked={user.status}
+                                    disabled={
+                                        user.username === "admin" ||
+                                        editingId !== user.username
+                                    }
+                                    onChange={(e) =>
+                                        handleUserChange(
+                                            user.username,
+                                            "status",
+                                            e.target.checked
+                                        )
+                                    }
+                                />
+                            </td>
+                            <td>
+                                {editingId === user.username ? (
+                                    <Select
+                                        isMulti
+                                        value={user.groups.map((group) => ({
+                                            value: group,
+                                            label: group,
+                                        }))}
+                                        options={allGroups}
+                                        onChange={(selectedOptions) => {
+                                            const selectedGroups =
+                                                selectedOptions.map(
+                                                    (option) => option.value
+                                                );
+                                            handleUserChange(
+                                                user.username,
+                                                "groups",
+                                                selectedGroups
+                                            );
+                                        }}
+                                        styles={
+                                            user.username === "admin"
+                                                ? customStyles
+                                                : {}
+                                        }
+                                        components={customComponents}
+                                    />
+                                ) : (
+                                    user.groups.join(", ")
+                                )}
+                            </td>
+                            <td>
+                                {editingId === user.username ? (
+                                    <>
                                         <button
                                             onClick={() =>
-                                                handleEdit(user.username)
+                                                handleSave(user.username)
                                             }
                                         >
-                                            Edit
+                                            Save
                                         </button>
-                                    )}
-                                </td>
-                            </tr>
-                        ))}
+                                        <button
+                                            onClick={handleCancel}
+                                            style={{ marginLeft: "10px" }}
+                                        >
+                                            Cancel
+                                        </button>
+                                    </>
+                                ) : (
+                                    <button
+                                        onClick={() =>
+                                            handleEdit(user.username)
+                                        }
+                                    >
+                                        Edit
+                                    </button>
+                                )}
+                            </td>
+                        </tr>
+                    ))}
                 </tbody>
             </table>
         </div>
