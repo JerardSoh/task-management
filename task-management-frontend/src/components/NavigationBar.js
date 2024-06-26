@@ -1,26 +1,21 @@
-import React, { useEffect, useState } from "react";
-import { logout, checkAdmin } from "../apiService";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useEffect } from "react";
+import { logout } from "../apiService";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useAdmin } from "./AdminContext";
 
 const NavigationBar = () => {
     const navigate = useNavigate();
-    const [isAdmin, setIsAdmin] = useState(false);
+    const location = useLocation();
+    const { isAdmin, setIsAdmin, verifyAdmin } = useAdmin();
 
     useEffect(() => {
-        const verifyAdmin = async () => {
-            try {
-                const response = await checkAdmin();
-                setIsAdmin(true);
-            } catch (error) {
-                setIsAdmin(false);
-            }
-        };
         verifyAdmin();
-    }, []);
+    }, [location.pathname, verifyAdmin]);
 
     const handleLogout = async () => {
         try {
             await logout();
+            setIsAdmin(false);
             navigate("/login");
         } catch (error) {
             console.error(error);

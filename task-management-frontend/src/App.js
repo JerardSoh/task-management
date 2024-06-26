@@ -8,10 +8,12 @@ import {
 } from "react-router-dom";
 import LoginComponent from "./components/LoginComponent";
 import HomePage from "./components/HomePage";
-import ProtectedRoute from "./components/ProtectedRoute";
-import NavigationBar from "./components/NavigationBar";
 import ProfilePage from "./components/ProfilePage";
 import UserManagementPage from "./components/UserManagementPage";
+import ProtectedRoute from "./components/ProtectedRoute";
+import AdminProtectedRoute from "./components/AdminProtectedRoute";
+import NavigationBar from "./components/NavigationBar";
+import { AdminProvider } from "./components/AdminContext";
 
 const App = () => {
     return (
@@ -22,25 +24,33 @@ const App = () => {
                     <Route
                         path="*"
                         element={
-                            <ProtectedRoute>
-                                <NavigationBar />
-                                <Routes>
-                                    <Route path="/" element={<HomePage />} />
-                                    <Route
-                                        path="/profile"
-                                        element={<ProfilePage />}
-                                    />
-                                    {/* Redirect all other paths to HomePage, adjust as needed */}
-                                    <Route
-                                        path="/user-management"
-                                        element={<UserManagementPage />}
-                                    />
-                                    <Route
-                                        path="*"
-                                        element={<Navigate to="/" />}
-                                    />
-                                </Routes>
-                            </ProtectedRoute>
+                            <AdminProvider>
+                                <ProtectedRoute>
+                                    <NavigationBar />
+                                    <Routes>
+                                        <Route
+                                            path="/"
+                                            element={<HomePage />}
+                                        />
+                                        <Route
+                                            path="/profile"
+                                            element={<ProfilePage />}
+                                        />
+                                        <Route
+                                            path="/user-management"
+                                            element={
+                                                <AdminProtectedRoute>
+                                                    <UserManagementPage />
+                                                </AdminProtectedRoute>
+                                            }
+                                        />
+                                        <Route
+                                            path="*"
+                                            element={<Navigate to="/" />}
+                                        />
+                                    </Routes>
+                                </ProtectedRoute>
+                            </AdminProvider>
                         }
                     />
                 </Routes>

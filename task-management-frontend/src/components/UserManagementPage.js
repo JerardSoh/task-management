@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Select, { components } from "react-select";
+import { useNavigate } from "react-router-dom";
+import { useAdmin } from "./AdminContext";
 import TextEditor from "./TextEditor";
 import {
     getAllUsers,
@@ -10,6 +12,17 @@ import {
 } from "../apiService";
 
 const UserManagementPage = () => {
+    const navigate = useNavigate();
+    const { isAdmin, verifyAdmin } = useAdmin();
+    useEffect(() => {
+        const checkAdminStatus = async () => {
+            await verifyAdmin();
+            if (!isAdmin) {
+                navigate("/");
+            }
+        };
+        checkAdminStatus();
+    }, [isAdmin, verifyAdmin]);
     const [users, setUsers] = useState([]);
     const [editingId, setEditingId] = useState(null);
     const [originalUser, setOriginalUser] = useState(null); // State to store original user data
@@ -43,7 +56,8 @@ const UserManagementPage = () => {
         fetchData();
     }, []);
 
-    const handleEdit = (username) => {
+    const handleEdit = async (username) => {
+        await verifyAdmin();
         const userToEdit = users.find((user) => user.username === username);
         setOriginalUser({ ...userToEdit }); // Store the original data
         setEditingId(username);
@@ -76,6 +90,7 @@ const UserManagementPage = () => {
         const userToSave = users.find((user) => user.username === username);
         if (userToSave) {
             try {
+                await verifyAdmin();
                 await updateUserDetails(userToSave.username, userToSave);
                 setEditingId(null);
                 setOriginalUser(null); // Clear original data after saving
@@ -95,6 +110,7 @@ const UserManagementPage = () => {
 
     const handleNewUserSave = async () => {
         try {
+            await verifyAdmin();
             await createUser(newUser);
             setNewUser({
                 username: "",
@@ -113,6 +129,7 @@ const UserManagementPage = () => {
 
     const handleCreateGroup = async () => {
         try {
+            await verifyAdmin();
             const newGroup = { groupname: newGroupName };
             await createGroup(newGroup);
             setNewGroupName("");
