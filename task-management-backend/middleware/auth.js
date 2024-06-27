@@ -39,6 +39,7 @@ const authenticateToken = asyncHandler(async (req, res, next) => {
         req.user = userResult[0];
         next();
     } catch (err) {
+        res.clearCookie("token", "", { expires: new Date(0) });
         throw new HttpError(err.message, STATUS_UNAUTHORIZED);
     }
 });

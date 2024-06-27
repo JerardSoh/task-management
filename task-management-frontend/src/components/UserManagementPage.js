@@ -37,7 +37,9 @@ const UserManagementPage = () => {
                     groups.map((group) => ({ value: group, label: group }))
                 );
             } catch (error) {
-                if (error.message === "unauthorized") {
+                if (error.message === "unauthenticated") {
+                    navigate("/login");
+                } else if (error.message === "unauthorized") {
                     navigate("/");
                 } else {
                     setMessage({ type: "error", text: error.message }); // Set error message from catch block
@@ -89,7 +91,9 @@ const UserManagementPage = () => {
                     text: "User updated successfully.",
                 }); // Set success message
             } catch (error) {
-                if (error.message === "unauthorized") {
+                if (error.message === "unauthenticated") {
+                    navigate("/login");
+                } else if (error.message === "unauthorized") {
                     navigate("/");
                 } else {
                     setMessage({ type: "error", text: error.message }); // Set error message from catch block
@@ -116,7 +120,9 @@ const UserManagementPage = () => {
             setUsers(users);
             setMessage({ type: "success", text: "User created successfully." }); // Set success message
         } catch (error) {
-            if (error.message === "unauthorized") {
+            if (error.message === "unauthenticated") {
+                navigate("/login");
+            } else if (error.message === "unauthorized") {
                 navigate("/");
             } else {
                 setMessage({ type: "error", text: error.message }); // Set error message from catch block
@@ -138,7 +144,9 @@ const UserManagementPage = () => {
                 text: "Group created successfully.",
             }); // Set success message
         } catch (error) {
-            if (error.message === "unauthorized") {
+            if (error.message === "unauthenticated") {
+                navigate("/login");
+            } else if (error.message === "unauthorized") {
                 navigate("/");
             } else {
                 setMessage({ type: "error", text: error.message }); // Set error message from catch block

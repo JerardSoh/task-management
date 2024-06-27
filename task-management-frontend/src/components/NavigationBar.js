@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { logout } from "../apiService";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { checkAdmin } from "../apiService";
+import { checkAdmin, checkAuth } from "../apiService";
 
 const NavigationBar = () => {
     const navigate = useNavigate();
@@ -10,6 +10,11 @@ const NavigationBar = () => {
 
     useEffect(() => {
         const verifyAdmin = async () => {
+            try {
+                await checkAuth();
+            } catch (error) {
+                navigate("/login");
+            }
             try {
                 await checkAdmin();
                 setIsAdmin(true);

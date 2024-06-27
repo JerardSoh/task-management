@@ -12,6 +12,8 @@ const api = axios.create({
 const handleUnauthorized = (error) => {
     if (error.response && error.response.status === 403) {
         throw new Error("unauthorized");
+    } else if (error.response && error.response.status === 401) {
+        throw new Error("unauthenticated");
     } else if (error.response) {
         throw new Error(error.response.data.message || "An error occurred");
     } else if (error.request) {
