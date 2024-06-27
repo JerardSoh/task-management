@@ -8,6 +8,19 @@ const api = axios.create({
     withCredentials: true,
 });
 
+// Helper function to handle unauthorized access
+const handleUnauthorized = (error) => {
+    if (error.response && error.response.status === 403) {
+        throw new Error("unauthorized");
+    } else if (error.response) {
+        throw new Error(error.response.data.message || "An error occurred");
+    } else if (error.request) {
+        throw new Error("No response from server");
+    } else {
+        throw new Error("Error in setting up the request");
+    }
+};
+
 export async function login(username, password) {
     try {
         const response = await api.post(`/login`, {
@@ -99,7 +112,7 @@ export async function getAllUsers() {
         const response = await api.get(`/user/all`);
         return response.data.result;
     } catch (error) {
-        throw new Error("Failed to get all users.");
+        handleUnauthorized(error);
     }
 }
 
@@ -108,13 +121,7 @@ export async function updateUserDetails(username, user) {
         const response = await api.put(`/user/${username}/update`, user);
         return response.data;
     } catch (error) {
-        if (error.response) {
-            throw new Error(error.response.data.message || "An error occurred");
-        } else if (error.request) {
-            throw new Error("No response from server");
-        } else {
-            throw new Error("Error in setting up the request");
-        }
+        handleUnauthorized(error);
     }
 }
 
@@ -123,7 +130,7 @@ export async function getAllGroups() {
         const response = await api.get(`/group/all`);
         return response.data.groups;
     } catch (error) {
-        throw new Error("Failed to get all groups.");
+        handleUnauthorized(error);
     }
 }
 
@@ -132,13 +139,7 @@ export async function createUser(user) {
         const response = await api.post(`/user/new`, user);
         return response.data;
     } catch (error) {
-        if (error.response) {
-            throw new Error(error.response.data.message || "An error occurred");
-        } else if (error.request) {
-            throw new Error("No response from server");
-        } else {
-            throw new Error("Error in setting up the request");
-        }
+        handleUnauthorized(error);
     }
 }
 
@@ -147,12 +148,6 @@ export async function createGroup(group) {
         const response = await api.post(`/group/new`, group);
         return response.data;
     } catch (error) {
-        if (error.response) {
-            throw new Error(error.response.data.message || "An error occurred");
-        } else if (error.request) {
-            throw new Error("No response from server");
-        } else {
-            throw new Error("Error in setting up the request");
-        }
+        handleUnauthorized(error);
     }
 }

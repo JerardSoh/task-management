@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
-import Select, { components } from "react-select";
+import Select from "react-select";
 import { useNavigate } from "react-router-dom";
-import { useAdmin } from "./AdminContext";
 import TextEditor from "./TextEditor";
 import {
     getAllUsers,
@@ -13,16 +12,6 @@ import {
 
 const UserManagementPage = () => {
     const navigate = useNavigate();
-    const { isAdmin, verifyAdmin } = useAdmin();
-    useEffect(() => {
-        const checkAdminStatus = async () => {
-            await verifyAdmin();
-            if (!isAdmin) {
-                navigate("/");
-            }
-        };
-        checkAdminStatus();
-    }, [isAdmin, verifyAdmin]);
     const [users, setUsers] = useState([]);
     const [editingId, setEditingId] = useState(null);
     const [originalUser, setOriginalUser] = useState(null); // State to store original user data
@@ -48,8 +37,11 @@ const UserManagementPage = () => {
                     groups.map((group) => ({ value: group, label: group }))
                 );
             } catch (error) {
-                console.error("Failed to fetch data:", error);
-                setMessage({ type: "error", text: "Failed to fetch data." });
+                if (error.message === "unauthorized") {
+                    navigate("/");
+                } else {
+                    setMessage({ type: "error", text: error.message }); // Set error message from catch block
+                }
             }
         };
 
@@ -57,7 +49,6 @@ const UserManagementPage = () => {
     }, []);
 
     const handleEdit = async (username) => {
-        await verifyAdmin();
         const userToEdit = users.find((user) => user.username === username);
         setOriginalUser({ ...userToEdit }); // Store the original data
         setEditingId(username);
@@ -90,7 +81,6 @@ const UserManagementPage = () => {
         const userToSave = users.find((user) => user.username === username);
         if (userToSave) {
             try {
-                await verifyAdmin();
                 await updateUserDetails(userToSave.username, userToSave);
                 setEditingId(null);
                 setOriginalUser(null); // Clear original data after saving
@@ -99,7 +89,11 @@ const UserManagementPage = () => {
                     text: "User updated successfully.",
                 }); // Set success message
             } catch (error) {
-                setMessage({ type: "error", text: error.message }); // Set error message from catch block
+                if (error.message === "unauthorized") {
+                    navigate("/");
+                } else {
+                    setMessage({ type: "error", text: error.message }); // Set error message from catch block
+                }
             }
         }
     };
@@ -110,7 +104,6 @@ const UserManagementPage = () => {
 
     const handleNewUserSave = async () => {
         try {
-            await verifyAdmin();
             await createUser(newUser);
             setNewUser({
                 username: "",
@@ -123,13 +116,16 @@ const UserManagementPage = () => {
             setUsers(users);
             setMessage({ type: "success", text: "User created successfully." }); // Set success message
         } catch (error) {
-            setMessage({ type: "error", text: error.message }); // Set error message from catch block
+            if (error.message === "unauthorized") {
+                navigate("/");
+            } else {
+                setMessage({ type: "error", text: error.message }); // Set error message from catch block
+            }
         }
     };
 
     const handleCreateGroup = async () => {
         try {
-            await verifyAdmin();
             const newGroup = { groupname: newGroupName };
             await createGroup(newGroup);
             setNewGroupName("");
@@ -142,7 +138,11 @@ const UserManagementPage = () => {
                 text: "Group created successfully.",
             }); // Set success message
         } catch (error) {
-            setMessage({ type: "error", text: error.message }); // Set error message from catch block
+            if (error.message === "unauthorized") {
+                navigate("/");
+            } else {
+                setMessage({ type: "error", text: error.message }); // Set error message from catch block
+            }
         }
     };
 

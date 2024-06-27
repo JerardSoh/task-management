@@ -1,11 +1,11 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { checkAuth } from "../apiService";
 
 const ProtectedRoute = ({ children }) => {
-    const [isAuthenticated, setIsAuthenticated] = React.useState(null);
+    const [isAuthenticated, setIsAuthenticated] = useState(null);
 
-    React.useEffect(() => {
+    useEffect(() => {
         const auth = async () => {
             try {
                 await checkAuth();

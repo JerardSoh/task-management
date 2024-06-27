@@ -1,20 +1,21 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
-import { useAdmin } from "./AdminContext";
+import { checkAdmin } from "../apiService";
 
 const AdminProtectedRoute = ({ children }) => {
-    const { isAdmin, verifyAdmin } = useAdmin();
+    const [isAdmin, setIsAdmin] = useState(null);
 
     useEffect(() => {
-        const auth = async () => {
+        const verifyAdmin = async () => {
             try {
-                await verifyAdmin();
+                await checkAdmin();
+                setIsAdmin(true);
             } catch (error) {
-                console.error("Error checking admin status:", error);
+                setIsAdmin(false);
             }
         };
-        auth();
-    }, [verifyAdmin]);
+        verifyAdmin();
+    }, []);
 
     if (isAdmin === null) {
         return <div>Loading...</div>; // Optional loading state
