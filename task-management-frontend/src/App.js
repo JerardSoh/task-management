@@ -17,38 +17,33 @@ import NavigationBar from "./components/NavigationBar";
 const App = () => {
     return (
         <Router>
-            <div>
-                <Routes>
-                    <Route path="/login" element={<LoginComponent />} />
-                    <Route
-                        path="*"
-                        element={
-                            <ProtectedRoute>
-                                <NavigationBar />
-                                <Routes>
-                                    <Route path="/" element={<HomePage />} />
-                                    <Route
-                                        path="/profile"
-                                        element={<ProfilePage />}
-                                    />
-                                    <Route
-                                        path="/user-management"
-                                        element={
-                                            <AdminProtectedRoute>
-                                                <UserManagementPage />
-                                            </AdminProtectedRoute>
-                                        }
-                                    />
-                                    <Route
-                                        path="*"
-                                        element={<Navigate to="/" />}
-                                    />
-                                </Routes>
-                            </ProtectedRoute>
-                        }
-                    />
-                </Routes>
-            </div>
+            <Routes>
+                <Route path="/login" element={<LoginComponent />} />
+                <Route
+                    path="*"
+                    element={
+                        <ProtectedRoute>
+                            <NavigationBar />
+                            <Routes>
+                                <Route path="/" element={<HomePage />} />
+                                <Route
+                                    path="/profile"
+                                    element={<ProfilePage />}
+                                />
+                                <Route
+                                    path="/user-management"
+                                    element={
+                                        <AdminProtectedRoute>
+                                            <UserManagementPage />
+                                        </AdminProtectedRoute>
+                                    }
+                                />
+                                <Route path="*" element={<Navigate to="/" />} />
+                            </Routes>
+                        </ProtectedRoute>
+                    }
+                />
+            </Routes>
         </Router>
     );
 };

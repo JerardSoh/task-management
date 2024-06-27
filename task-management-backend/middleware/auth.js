@@ -16,27 +16,30 @@ const checkGroup = async (username, groupname) => {
         );
         return result.length > 0;
     } catch (error) {
-        console.error("Error checking group:", error);
         throw error;
     }
 };
 
 // Middleware to authenticate token
 const authenticateToken = asyncHandler(async (req, res, next) => {
-    const token = req.cookies?.token;
-    if (!token) {
-        throw new HttpError(
-            "Authentication token not found",
-            STATUS_UNAUTHORIZED
-        );
-    }
-
     try {
+        const token = req.cookies?.token;
+        if (!token) {
+            throw new HttpError("Authentication failed", STATUS_UNAUTHORIZED);
+        }
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = decoded;
+        const [userResult] = await db.execute(
+            "SELECT * FROM users WHERE username = ?",
+            [decoded.username]
+        );
+
+        if (userResult.length === 0 || !userResult[0].status) {
+            throw new HttpError("Authentication failed.", STATUS_UNAUTHORIZED);
+        }
+        req.user = userResult[0];
         next();
     } catch (err) {
-        throw new HttpError("Invalid or expired token", STATUS_FORBIDDEN);
+        throw new HttpError(err.message, STATUS_UNAUTHORIZED);
     }
 });
 

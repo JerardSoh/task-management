@@ -25,21 +25,26 @@ const login = asyncHandler(async (req, res, next) => {
     ]);
     const user = rows[0];
 
-    // Check if user exists
-    if (!user) {
-        throw new HttpError("User not found", STATUS_UNAUTHORIZED);
+    // Check if user exists or password is correct
+    if (user) {
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (!isPasswordValid) {
+            throw new HttpError(
+                "Login failed. Invalid username or password",
+                STATUS_UNAUTHORIZED
+            );
+        }
+    } else {
+        throw new HttpError(
+            "Login failed. Invalid username or password",
+            STATUS_UNAUTHORIZED
+        );
     }
 
     // Check if status is active
     if (!user.status) {
-        throw new HttpError("User is not active", STATUS_FORBIDDEN);
-    }
-
-    // Check if password is correct
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
         throw new HttpError(
-            "Invalid username or password",
+            "Login failed. Invalid username or password",
             STATUS_UNAUTHORIZED
         );
     }
