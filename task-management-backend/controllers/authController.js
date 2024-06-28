@@ -1,5 +1,4 @@
 const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
 const db = require("../db");
 const HttpError = require("../utils/httpError");
 const asyncHandler = require("../utils/asyncHandler");
@@ -8,7 +7,6 @@ const { createAndSetToken } = require("../utils/tokenManager");
 // Constants for HTTP status codes
 const STATUS_OK = 200;
 const STATUS_UNAUTHORIZED = 401;
-const STATUS_FORBIDDEN = 403;
 
 // Login route: /login
 const login = asyncHandler(async (req, res, next) => {
