@@ -30,7 +30,7 @@ const validateUsername = (username) => {
 };
 
 // Create a new user route: /user/new
-const createUser = asyncHandler(async (req, res, next) => {
+const createUser = asyncHandler(async (req, res) => {
     const { username, password, email, status, groupnames } = req.body;
     // Username validation
     if (!validateUsername(username)) {
@@ -100,7 +100,7 @@ const createUser = asyncHandler(async (req, res, next) => {
 });
 
 // View profile route: /user/me
-const viewMyProfile = asyncHandler(async (req, res, next) => {
+const viewMyProfile = asyncHandler(async (req, res) => {
     // Check if req.user is set
     if (!req.user) {
         throw new HttpError("User not found", STATUS_NOT_FOUND);
@@ -117,7 +117,7 @@ const viewMyProfile = asyncHandler(async (req, res, next) => {
 });
 
 // Get all users route: /user/all
-const getUsers = asyncHandler(async (req, res, next) => {
+const getUsers = asyncHandler(async (req, res) => {
     const [users] = await db.query(
         "SELECT users.username, users.email, users.status, GROUP_CONCAT(usergroup.groupname) AS `groups` FROM users LEFT JOIN usergroup ON users.username = usergroup.username GROUP BY users.username"
     );
@@ -131,7 +131,7 @@ const getUsers = asyncHandler(async (req, res, next) => {
 });
 
 // Update user email route: /user/me/email
-const updateUserEmail = asyncHandler(async (req, res, next) => {
+const updateUserEmail = asyncHandler(async (req, res) => {
     // Check if req.user is set
     if (!req.user) {
         throw new HttpError("User not found", STATUS_NOT_FOUND);
@@ -156,7 +156,7 @@ const updateUserEmail = asyncHandler(async (req, res, next) => {
 });
 
 // Update user password route: /user/me/password
-const updateUserPassword = asyncHandler(async (req, res, next) => {
+const updateUserPassword = asyncHandler(async (req, res) => {
     // Check if req.user is set
     if (!req.user) {
         throw new HttpError("User not found", STATUS_NOT_FOUND);
@@ -186,7 +186,7 @@ const updateUserPassword = asyncHandler(async (req, res, next) => {
 });
 
 // Update user details (password, email, status, group) route: /user/:username/update
-const updateUserDetails = asyncHandler(async (req, res, next) => {
+const updateUserDetails = asyncHandler(async (req, res) => {
     const username = req.params.username;
     const { password, email, status, groups } = req.body;
 

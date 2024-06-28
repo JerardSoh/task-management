@@ -9,7 +9,7 @@ const STATUS_OK = 200;
 const STATUS_UNAUTHORIZED = 401;
 
 // Login route: /login
-const login = asyncHandler(async (req, res, next) => {
+const login = asyncHandler(async (req, res) => {
     const { username, password } = req.body;
     if (!username || !password) {
         throw new HttpError(
@@ -54,7 +54,7 @@ const login = asyncHandler(async (req, res, next) => {
 });
 
 // checkAuth route: /auth
-const checkAuth = asyncHandler(async (req, res, next) => {
+const checkAuth = asyncHandler(async (req, res) => {
     res.status(STATUS_OK).json({
         success: true,
         message: "User is authenticated",
@@ -62,7 +62,7 @@ const checkAuth = asyncHandler(async (req, res, next) => {
 });
 
 // isAdmin route: /admin
-const isAdmin = asyncHandler(async (req, res, next) => {
+const isAdmin = asyncHandler(async (req, res) => {
     res.status(STATUS_OK).json({
         success: true,
         message: "User is an admin",
@@ -70,7 +70,7 @@ const isAdmin = asyncHandler(async (req, res, next) => {
 });
 
 // Logout route: /logout
-const logout = asyncHandler(async (req, res, next) => {
+const logout = asyncHandler(async (req, res) => {
     res.clearCookie("token", "", { expires: new Date(0) });
     res.status(STATUS_OK).json({
         success: true,

@@ -8,7 +8,7 @@ const STATUS_CREATED = 201;
 const STATUS_CONFLICT = 409;
 
 // Get all groups route: /group/all
-const getGroups = asyncHandler(async (req, res, next) => {
+const getGroups = asyncHandler(async (req, res) => {
     const [groups] = await db.execute("SELECT groupname FROM `groups`");
     res.status(STATUS_OK).json({
         success: true,
@@ -17,7 +17,7 @@ const getGroups = asyncHandler(async (req, res, next) => {
 });
 
 // Create new group route: /group/new
-const createGroup = asyncHandler(async (req, res, next) => {
+const createGroup = asyncHandler(async (req, res) => {
     const { groupname } = req.body;
 
     // Validate group name
