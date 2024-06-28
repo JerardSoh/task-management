@@ -9,7 +9,7 @@ const NavigationBar = () => {
     const [isAdmin, setIsAdmin] = useState(null);
 
     useEffect(() => {
-        const verifyAdmin = async () => {
+        const verifyAuthAndAdmin = async () => {
             try {
                 await checkAuth();
             } catch (error) {
@@ -22,7 +22,7 @@ const NavigationBar = () => {
                 setIsAdmin(false);
             }
         };
-        verifyAdmin();
+        verifyAuthAndAdmin();
     }, [location.pathname]);
 
     const handleLogout = async () => {
