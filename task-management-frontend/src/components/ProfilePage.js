@@ -7,9 +7,6 @@ const ProfileComponent = () => {
     const [newPassword, setNewPassword] = useState("");
     const [passwordMessage, setPasswordMessage] = useState("");
     const [emailMessage, setEmailMessage] = useState("");
-    const [isEmailUpdateSuccess, setIsEmailUpdateSuccess] = useState(false);
-    const [isPasswordUpdateSuccess, setIsPasswordUpdateSuccess] =
-        useState(false);
 
     useEffect(() => {
         const fetchUserProfile = async () => {
@@ -28,20 +25,18 @@ const ProfileComponent = () => {
         try {
             const data = await updateEmail(newEmail);
             setUser((prevUser) => ({ ...prevUser, email: newEmail }));
-            setEmailMessage(data.message);
-            setIsEmailUpdateSuccess(true);
+            setEmailMessage({ text: data.message, isSuccess: true });
         } catch (error) {
-            setEmailMessage(error.message);
+            setEmailMessage({ text: error.message, isSuccess: false });
         }
     };
 
     const handleUpdatePassword = async () => {
         try {
             const data = await updatePassword(newPassword);
-            setPasswordMessage(data.message);
-            setIsPasswordUpdateSuccess(true);
+            setPasswordMessage({ text: data.message, isSuccess: true });
         } catch (error) {
-            setPasswordMessage(error.message);
+            setPasswordMessage({ text: error.message, isSuccess: false });
         }
     };
 
@@ -58,12 +53,12 @@ const ProfileComponent = () => {
                 <h2>Change Email:</h2>
                 <p
                     className={
-                        isEmailUpdateSuccess
+                        emailMessage.isSuccess
                             ? "success-message"
                             : "error-message"
                     }
                 >
-                    {emailMessage}
+                    {emailMessage.text}
                 </p>
                 <div style={{ marginBottom: "20px" }}>
                     <input
@@ -79,12 +74,12 @@ const ProfileComponent = () => {
                 <h2>Change Password:</h2>
                 <p
                     className={
-                        isPasswordUpdateSuccess
+                        passwordMessage.isSuccess
                             ? "success-message"
                             : "error-message"
                     }
                 >
-                    {passwordMessage}
+                    {passwordMessage.text}
                 </p>
                 <div style={{ marginBottom: "20px" }}>
                     <input

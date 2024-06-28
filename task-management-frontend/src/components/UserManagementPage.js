@@ -8,6 +8,7 @@ import {
     updateUserDetails,
     getAllGroups,
     createGroup,
+    checkAdmin,
 } from "../apiService";
 
 const UserManagementPage = () => {
@@ -48,13 +49,24 @@ const UserManagementPage = () => {
         };
 
         fetchData();
-    }, []);
+    }, [navigate]);
 
     const handleEdit = async (username) => {
-        const userToEdit = users.find((user) => user.username === username);
-        setOriginalUser({ ...userToEdit }); // Store the original data
-        setEditingId(username);
-        setMessage({ type: "", text: "" }); // Clear messages on edit
+        try {
+            await checkAdmin();
+            const userToEdit = users.find((user) => user.username === username);
+            setOriginalUser({ ...userToEdit }); // Store the original data
+            setEditingId(username);
+            setMessage({ type: "", text: "" }); // Clear messages on edit
+        } catch (error) {
+            if (error.message === "unauthenticated") {
+                navigate("/login");
+            } else if (error.message === "unauthorized") {
+                navigate("/");
+            } else {
+                setMessage({ type: "error", text: error.message }); // Set error message from catch block
+            }
+        }
     };
 
     const handleCancel = () => {

@@ -1,5 +1,5 @@
 # Ignore node_modules directory
-task-management-backend/node_modules/
+node_modules/
 
 # Ignore environment configuration file
-task-management-backend/.env
+.env

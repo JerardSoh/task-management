@@ -105,7 +105,7 @@ export async function checkAdmin() {
         const response = await api.get(`/admin`);
         return response.data;
     } catch (error) {
-        throw new Error("Failed to check admin status.");
+        handleUnauthorized(error);
     }
 }
 
