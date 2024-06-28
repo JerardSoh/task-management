@@ -31,7 +31,7 @@ const validateUsername = (username) => {
 
 // Create a new user route: /user/new
 const createUser = asyncHandler(async (req, res) => {
-    const { username, password, email, status, groupnames } = req.body;
+    const { username, password, email, status, groups } = req.body;
 
     const hashedPassword = await bcrypt.hash(password, 8);
     const connection = await db.getConnection();
@@ -76,8 +76,8 @@ const createUser = asyncHandler(async (req, res) => {
         );
 
         // Add user to group
-        if (groupnames && Array.isArray(groupnames) && groupnames.length > 0) {
-            const values = groupnames.map((groupname) => [username, groupname]);
+        if (groups && Array.isArray(groups) && groups.length > 0) {
+            const values = groups.map((group) => [username, group]);
             const flattenedValues = values.flat();
             const placeholders = values.map(() => "(?, ?)").join(", ");
 
