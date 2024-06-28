@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { getUser, updateEmail, updatePassword } from "../apiService";
+import "../styles/ProfilePage.css"; // Import the CSS file
 
 const ProfileComponent = () => {
     const [user, setUser] = useState(null);
@@ -41,15 +42,21 @@ const ProfileComponent = () => {
     };
 
     if (!user) {
-        return <div>Loading...</div>;
+        return <div className="loading">Loading...</div>;
     }
 
     return (
-        <div>
-            <h1>Profile Page</h1>
-            <p>Username: {user.username}</p>
-            <p>Email: {user.email}</p>
-            <div>
+        <div className="profile-container">
+            <h1 className="profile-title">Profile Page</h1>
+            <div className="profile-details">
+                <p>
+                    <strong>Username:</strong> {user.username}
+                </p>
+                <p>
+                    <strong>Email:</strong> {user.email}
+                </p>
+            </div>
+            <div className="profile-section">
                 <h2>Change Email:</h2>
                 <p
                     className={
@@ -60,7 +67,7 @@ const ProfileComponent = () => {
                 >
                     {emailMessage.text}
                 </p>
-                <div style={{ marginBottom: "20px" }}>
+                <div className="input-group">
                     <input
                         type="email"
                         placeholder="New email"
@@ -70,7 +77,7 @@ const ProfileComponent = () => {
                     <button onClick={handleUpdateEmail}>Update Email</button>
                 </div>
             </div>
-            <div>
+            <div className="profile-section">
                 <h2>Change Password:</h2>
                 <p
                     className={
@@ -81,7 +88,7 @@ const ProfileComponent = () => {
                 >
                     {passwordMessage.text}
                 </p>
-                <div style={{ marginBottom: "20px" }}>
+                <div className="input-group">
                     <input
                         type="password"
                         placeholder="New password"

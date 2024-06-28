@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { login } from "../apiService";
 import { useNavigate } from "react-router-dom";
+import "../styles/LoginComponent.css"; // Import the CSS file
 
 const LoginComponent = () => {
     const [username, setUsername] = useState("");
@@ -20,32 +21,24 @@ const LoginComponent = () => {
     };
 
     return (
-        <div style={{ textAlign: "center", marginTop: "50px" }}>
+        <div className="login-container">
             <h2>Task Management System</h2>
-            <p className="error-message">{message}</p>
+            <p className={`message ${message && "error-message"}`}>{message}</p>
             <input
                 type="text"
                 placeholder="Username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                style={{
-                    display: "block",
-                    margin: "10px auto",
-                    padding: "10px",
-                }}
+                className="login-input"
             />
             <input
                 type="password"
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                style={{
-                    display: "block",
-                    margin: "10px auto",
-                    padding: "10px",
-                }}
+                className="login-input"
             />
-            <button onClick={handleLogin} style={{ padding: "10px 20px" }}>
+            <button onClick={handleLogin} className="login-button">
                 Login
             </button>
         </div>

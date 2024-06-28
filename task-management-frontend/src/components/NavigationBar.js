@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { logout } from "../apiService";
 import { Link, useNavigate } from "react-router-dom";
 import { checkAdmin, checkAuth } from "../apiService";
+import "../styles/NavigationBar.css"; // Updated import path
 
 const NavigationBar = () => {
     const navigate = useNavigate();
@@ -41,7 +42,6 @@ const NavigationBar = () => {
         } catch (error) {
             setIsAdmin(false);
         }
-        // Redirect to home if user is not an admin and tries to access user-management
         if (path === "/user-management" && !adminStatus) {
             navigate("/");
         } else {
@@ -60,26 +60,19 @@ const NavigationBar = () => {
     };
 
     return (
-        <div
-            style={{
-                display: "flex",
-                justifyContent: "space-between",
-                padding: "10px",
-                backgroundColor: "#f0f0f0",
-            }}
-        >
-            <div>
+        <div className="navbar">
+            <div className="nav-links">
                 <Link
                     to="/"
                     onClick={(e) => handleNavigation(e, "/")}
-                    style={{ marginRight: "10px" }}
+                    className="nav-link"
                 >
                     Home
                 </Link>
                 <Link
                     to="/profile"
                     onClick={(e) => handleNavigation(e, "/profile")}
-                    style={{ marginRight: "10px" }}
+                    className="nav-link"
                 >
                     Profile
                 </Link>
@@ -87,14 +80,14 @@ const NavigationBar = () => {
                     <Link
                         to="/user-management"
                         onClick={(e) => handleNavigation(e, "/user-management")}
-                        style={{ marginRight: "10px" }}
+                        className="nav-link"
                     >
                         User Management
                     </Link>
                 )}
             </div>
             <div>
-                <Link to="/logout" onClick={handleLogout}>
+                <Link to="/logout" onClick={handleLogout} className="nav-link">
                     Logout
                 </Link>
             </div>

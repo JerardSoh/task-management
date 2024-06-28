@@ -10,6 +10,7 @@ import {
     createGroup,
     checkAdmin,
 } from "../apiService";
+import "../styles/UserManagementPage.css"; // Import the CSS file
 
 const UserManagementPage = () => {
     const navigate = useNavigate();
@@ -185,9 +186,9 @@ const UserManagementPage = () => {
     };
 
     return (
-        <div>
+        <div className="user-management-container">
             {/* Create Group Section */}
-            <div>
+            <div className="create-group">
                 <label style={{ marginRight: "10px" }}>Create Group:</label>
                 <input
                     type="text"
@@ -200,18 +201,11 @@ const UserManagementPage = () => {
 
             {/* Consolidated Message Display */}
             {message.text && (
-                <div
-                    style={{
-                        color: message.type === "error" ? "red" : "green",
-                        marginBottom: "10px",
-                    }}
-                >
-                    {message.text}
-                </div>
+                <div className={`message ${message.type}`}>{message.text}</div>
             )}
 
             {/* User Management Table */}
-            <table>
+            <table className="user-table">
                 <thead>
                     <tr>
                         <th>Username</th>
@@ -290,10 +284,22 @@ const UserManagementPage = () => {
                                     )
                                 }
                                 components={customComponents}
+                                menuPortalTarget={document.body} // Render the menu outside the table
+                                styles={{
+                                    menuPortal: (base) => ({
+                                        ...base,
+                                        zIndex: 9999,
+                                    }),
+                                }}
                             />
                         </td>
                         <td>
-                            <button onClick={handleNewUserSave}>Save</button>
+                            <button
+                                className="create-button"
+                                onClick={handleNewUserSave}
+                            >
+                                Create
+                            </button>
                         </td>
                     </tr>
                     {/* Existing Users Rows */}
@@ -373,12 +379,15 @@ const UserManagementPage = () => {
                                                 selectedGroups
                                             );
                                         }}
-                                        styles={
-                                            user.username === "admin"
-                                                ? customStyles
-                                                : {}
-                                        }
+                                        styles={{
+                                            ...customStyles,
+                                            menuPortal: (base) => ({
+                                                ...base,
+                                                zIndex: 9999,
+                                            }),
+                                        }}
                                         components={customComponents}
+                                        menuPortalTarget={document.body} // Render the menu outside the table
                                     />
                                 ) : (
                                     user.groups.join(", ")
@@ -388,6 +397,7 @@ const UserManagementPage = () => {
                                 {editingId === user.username ? (
                                     <>
                                         <button
+                                            className="save-button"
                                             onClick={() =>
                                                 handleSave(user.username)
                                             }
@@ -395,6 +405,7 @@ const UserManagementPage = () => {
                                             Save
                                         </button>
                                         <button
+                                            className="cancel-button"
                                             onClick={handleCancel}
                                             style={{ marginLeft: "10px" }}
                                         >

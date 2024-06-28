@@ -1,0 +1,39 @@
+/* Basic styles for the navigation bar */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: #333;
+    color: white;
+    font-family: 'Arial', sans-serif;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Container for navigation links */
+.nav-links {
+    display: flex;
+    align-items: center;
+}
+
+/* Style for individual navigation links */
+.nav-link {
+    margin-right: 20px;
+    text-decoration: none;
+    color: white;
+    font-weight: bold;
+    padding: 8px 15px;
+    border-radius: 4px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+/* Hover effect for navigation links */
+.nav-link:hover {
+    background-color: #575757;
+    color: #fff;
+}
+
+/* Last child navigation link without right margin */
+.nav-link:last-child {
+    margin-right: 0;
+}
