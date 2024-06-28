@@ -32,31 +32,20 @@ const validateUsername = (username) => {
 // Create a new user route: /user/new
 const createUser = asyncHandler(async (req, res) => {
     const { username, password, email, status, groupnames } = req.body;
-    // Username validation
-    if (!validateUsername(username)) {
-        throw new HttpError(
-            "Username must be 4-32 characters long and can only contain alphanumerics or '_'.",
-            STATUS_BAD_REQUEST
-        );
-    }
-
-    // Password validation
-    if (!validatePassword(password)) {
-        throw new HttpError(
-            "Password must contain at least one number, one letter, and one special character, and be 8-10 characters long.",
-            STATUS_BAD_REQUEST
-        );
-    }
-    // Email validation
-    if (email && !validateEmail(email)) {
-        throw new HttpError("Invalid email address", STATUS_BAD_REQUEST);
-    }
 
     const hashedPassword = await bcrypt.hash(password, 8);
     const connection = await db.getConnection();
 
     try {
         await connection.beginTransaction();
+
+        // Username validation
+        if (!validateUsername(username)) {
+            throw new HttpError(
+                "Username must be 4-32 characters long and can only contain alphanumerics or '_'.",
+                STATUS_BAD_REQUEST
+            );
+        }
 
         // Check if user already exists
         const [existingUser] = await connection.execute(
@@ -65,6 +54,19 @@ const createUser = asyncHandler(async (req, res) => {
         );
         if (existingUser.length > 0) {
             throw new HttpError("Username already exists", STATUS_CONFLICT);
+        }
+
+        // Password validation
+        if (!validatePassword(password)) {
+            throw new HttpError(
+                "Password must contain at least one number, one letter, and one special character, and be 8-10 characters long.",
+                STATUS_BAD_REQUEST
+            );
+        }
+
+        // Email validation
+        if (email && !validateEmail(email)) {
+            throw new HttpError("Invalid email address", STATUS_BAD_REQUEST);
         }
 
         // Create user
