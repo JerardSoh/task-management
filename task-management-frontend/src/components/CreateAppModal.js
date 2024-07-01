@@ -3,6 +3,7 @@ import Modal from "react-modal";
 import Select from "react-select";
 import { createApp, getAllGroups } from "../apiService";
 import { format, parseISO } from "date-fns";
+import "../styles/CreateAppModal.css";
 
 Modal.setAppElement("#root");
 
@@ -83,12 +84,19 @@ const CreateAppModal = ({ isOpen, onRequestClose }) => {
             isOpen={isOpen}
             onRequestClose={onRequestClose}
             contentLabel="Create App Modal"
+            className="modal-content"
+            overlayClassName="modal-overlay"
         >
-            <h2>Create New App</h2>
+            <div className="modal-header">
+                <h2>Create New App</h2>
+                <button onClick={onRequestClose} className="close-button">
+                    ×
+                </button>
+            </div>
             {message.text && (
                 <div className={`message ${message.type}`}>{message.text}</div>
             )}
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} className="modal-form">
                 <div>
                     <label>App Acronym:</label>
                     <input
@@ -151,6 +159,7 @@ const CreateAppModal = ({ isOpen, onRequestClose }) => {
                             )
                         }
                         options={allGroups}
+                        isClearable
                     />
                 </div>
                 <div>
@@ -167,10 +176,11 @@ const CreateAppModal = ({ isOpen, onRequestClose }) => {
                             )
                         }
                         options={allGroups}
+                        isClearable
                     />
                 </div>
                 <div>
-                    <label>Permit ToDo List:</label>
+                    <label>Permit ToDo:</label>
                     <Select
                         name="App_permit_toDoList"
                         value={allGroups.find(
@@ -183,6 +193,7 @@ const CreateAppModal = ({ isOpen, onRequestClose }) => {
                             )
                         }
                         options={allGroups}
+                        isClearable
                     />
                 </div>
                 <div>
@@ -199,6 +210,7 @@ const CreateAppModal = ({ isOpen, onRequestClose }) => {
                             )
                         }
                         options={allGroups}
+                        isClearable
                     />
                 </div>
                 <div>
@@ -215,11 +227,11 @@ const CreateAppModal = ({ isOpen, onRequestClose }) => {
                             )
                         }
                         options={allGroups}
+                        isClearable
                     />
                 </div>
                 <button type="submit">Create App</button>
             </form>
-            <button onClick={onRequestClose}>Close</button>
         </Modal>
     );
 };

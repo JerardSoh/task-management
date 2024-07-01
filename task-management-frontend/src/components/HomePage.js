@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import CreateAppModal from "../components/CreateAppModal";
+import "../styles/HomePage.css"; // Import the CSS file
 
 const HomePage = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -14,20 +15,16 @@ const HomePage = () => {
 
     return (
         <div>
-            <header
-                style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    padding: "1rem",
-                }}
-            >
+            <header className="header">
                 <h1>Applications</h1>
-                <button onClick={handleCreateAppClick}>Create App</button>
+                <button
+                    onClick={handleCreateAppClick}
+                    className="create-app-button"
+                >
+                    Create App
+                </button>
             </header>
-            <main>
-                <h2></h2>
-                {/* Additional home page content can go here */}
-            </main>
+            <main>{/* Additional home page content can go here */}</main>
             <CreateAppModal
                 isOpen={isModalOpen}
                 onRequestClose={handleCloseModal}

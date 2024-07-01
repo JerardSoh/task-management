@@ -1,0 +1,34 @@
+/* HomePage.css */
+.header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+    margin-top: 2rem; /* Add margin-top to move the header down */
+    background: #f8f9fa;
+    position: relative;
+}
+
+.header h1 {
+    margin: 0;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.create-app-button {
+    padding: 10px 20px;
+    border-radius: 5px;
+    border: 1px solid #007bff;
+    background-color: #007bff;
+    color: #fff;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    position: absolute;
+    right: 1rem;
+}
+
+.create-app-button:hover {
+    background-color: #0056b3;
+}
