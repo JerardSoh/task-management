@@ -169,7 +169,14 @@ const UserManagementPage = () => {
 
     const customStyles = {
         multiValueRemove: (base, state) => {
-            if (state.data.value === "admin") {
+            const editingUser = users.find(
+                (user) => user.username === editingId
+            );
+            if (
+                editingUser &&
+                editingUser.username === "admin" &&
+                state.data.value === "admin"
+            ) {
                 return { ...base, display: "none" };
             }
             return base;
