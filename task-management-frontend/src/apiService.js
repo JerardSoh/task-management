@@ -153,3 +153,12 @@ export async function createGroup(group) {
         handleUnauthorized(error);
     }
 }
+
+export async function createApp(app) {
+    try {
+        const response = await api.post(`/app/new`, app);
+        return response.data;
+    } catch (error) {
+        handleUnauthorized(error);
+    }
+}

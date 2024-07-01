@@ -6,6 +6,7 @@ const cors = require("cors"); // CORS handling
 const authRoutes = require("./routes/authRoutes.js");
 const userRoutes = require("./routes/userRoutes.js");
 const groupRoutes = require("./routes/groupRoutes.js");
+const appRoutes = require("./routes/appRoutes.js");
 const errorHandler = require("./utils/errorHandler");
 const { authenticateToken, requireGroup } = require("./middleware/auth");
 
@@ -32,6 +33,7 @@ app.options("*", cors());
 // Routes
 app.use("/user", authenticateToken, userRoutes);
 app.use("/group", authenticateToken, requireGroup("admin"), groupRoutes);
+app.use("/app", authenticateToken, appRoutes);
 app.use("/", authRoutes);
 
 // Error handling middleware
