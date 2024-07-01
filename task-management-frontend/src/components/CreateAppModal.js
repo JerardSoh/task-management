@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import Modal from "react-modal";
 import Select from "react-select";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import { createApp, getAllGroups } from "../apiService";
 import { format, parseISO } from "date-fns";
 import "../styles/CreateAppModal.css";
@@ -52,17 +54,16 @@ const CreateAppModal = ({ isOpen, onRequestClose }) => {
         });
     };
 
-    const handleDateChange = (e) => {
-        const { name, value } = e.target;
-        setForm({ ...form, [name]: value });
+    const handleDateChange = (name, date) => {
+        setForm({ ...form, [name]: date ? format(date, "yyyy-MM-dd") : "" });
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         const formattedForm = {
             ...form,
-            App_startDate: format(parseISO(form.App_startDate), "yyyy-MM-dd"),
-            App_endDate: format(parseISO(form.App_endDate), "yyyy-MM-dd"),
+            App_startDate: form.App_startDate,
+            App_endDate: form.App_endDate,
         };
 
         try {
@@ -74,9 +75,8 @@ const CreateAppModal = ({ isOpen, onRequestClose }) => {
         }
     };
 
-    const formatDateForInput = (date) => {
-        if (!date) return "";
-        return format(parseISO(date), "yyyy-MM-dd");
+    const parseDateForInput = (date) => {
+        return date ? parseISO(date) : null;
     };
 
     return (
@@ -126,23 +126,27 @@ const CreateAppModal = ({ isOpen, onRequestClose }) => {
                     />
                 </div>
                 <div>
-                    <label>Start Date:</label>
-                    <input
-                        type="date"
-                        name="App_startDate"
-                        value={formatDateForInput(form.App_startDate)}
-                        onChange={handleDateChange}
-                        required
+                    <label>Start Date: </label>
+                    <DatePicker
+                        selected={parseDateForInput(form.App_startDate)}
+                        onChange={(date) =>
+                            handleDateChange("App_startDate", date)
+                        }
+                        dateFormat="dd/MM/yyyy"
+                        className="date-picker"
+                        placeholderText="Select start date"
                     />
                 </div>
                 <div>
-                    <label>End Date:</label>
-                    <input
-                        type="date"
-                        name="App_endDate"
-                        value={formatDateForInput(form.App_endDate)}
-                        onChange={handleDateChange}
-                        required
+                    <label>End Date: </label>
+                    <DatePicker
+                        selected={parseDateForInput(form.App_endDate)}
+                        onChange={(date) =>
+                            handleDateChange("App_endDate", date)
+                        }
+                        dateFormat="dd/MM/yyyy"
+                        className="date-picker"
+                        placeholderText="Select end date"
                     />
                 </div>
                 <div>
