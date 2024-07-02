@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import CreateAppModal from "../components/CreateAppModal";
-import "../styles/HomePage.css"; // Import the CSS file
+import "../styles/HomePage.css";
 
 const HomePage = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
