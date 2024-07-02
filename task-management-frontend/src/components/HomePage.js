@@ -1,16 +1,70 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import CreateAppModal from "../components/CreateAppModal";
+import EditAppModal from "../components/EditAppModal";
 import "../styles/HomePage.css";
+import { useNavigate } from "react-router-dom";
+import { format, parseISO } from "date-fns";
 
 const HomePage = () => {
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [selectedAppAcronym, setSelectedAppAcronym] = useState(null);
+    const [apps, setApps] = useState([]);
+    const [message, setMessage] = useState({ type: "", text: "" });
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const fetchApps = async () => {
+            try {
+                const response = await axios.get(
+                    `${process.env.REACT_APP_API_URL}/app/all`,
+                    {
+                        withCredentials: true,
+                    }
+                );
+                setApps(response.data.apps);
+            } catch (error) {
+                setMessage({
+                    type: "error",
+                    text: error.response.data.message || "An error occurred",
+                });
+                if (error.request.status === 401) {
+                    navigate("/login");
+                } else if (error.request.status === 403) {
+                    navigate("/");
+                }
+            }
+        };
+
+        fetchApps();
+    }, [navigate]);
 
     const handleCreateAppClick = () => {
-        setIsModalOpen(true);
+        setIsCreateModalOpen(true);
     };
 
-    const handleCloseModal = () => {
-        setIsModalOpen(false);
+    const handleEditAppClick = (appAcronym) => {
+        setSelectedAppAcronym(appAcronym);
+        setIsEditModalOpen(true);
+    };
+
+    const handleCloseCreateModal = () => {
+        setIsCreateModalOpen(false);
+    };
+
+    const handleCloseEditModal = () => {
+        setIsEditModalOpen(false);
+        setSelectedAppAcronym(null);
+    };
+
+    const formatDuration = (start, end) => {
+        const startDate = parseISO(start);
+        const endDate = parseISO(end);
+        return `${format(startDate, "dd-MM-yyyy")} - ${format(
+            endDate,
+            "dd-MM-yyyy"
+        )}`;
     };
 
     return (
@@ -24,10 +78,39 @@ const HomePage = () => {
                     Create App
                 </button>
             </header>
-            <main>{/* Additional home page content can go here */}</main>
+            <main className="app-grid">
+                {apps.map((app) => (
+                    <div key={app.App_Acronym} className="app-card">
+                        <p>
+                            <strong>Rnum:</strong> {app.App_Rnumber}
+                        </p>
+                        <p>
+                            <strong>Name:</strong> {app.App_Acronym}
+                        </p>
+                        <p>
+                            <strong>Desc:</strong> {app.App_Description}
+                        </p>
+                        <p>
+                            <strong>Duration:</strong>{" "}
+                            {formatDuration(app.App_startDate, app.App_endDate)}
+                        </p>
+                        <button
+                            className="edit-button"
+                            onClick={() => handleEditAppClick(app.App_Acronym)}
+                        >
+                            Edit
+                        </button>
+                    </div>
+                ))}
+            </main>
             <CreateAppModal
-                isOpen={isModalOpen}
-                onRequestClose={handleCloseModal}
+                isOpen={isCreateModalOpen}
+                onRequestClose={handleCloseCreateModal}
+            />
+            <EditAppModal
+                isOpen={isEditModalOpen}
+                onRequestClose={handleCloseEditModal}
+                appAcronym={selectedAppAcronym}
             />
         </div>
     );

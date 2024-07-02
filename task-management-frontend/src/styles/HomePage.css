@@ -1,34 +1,74 @@
 /* HomePage.css */
 .header {
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
-    padding: 1rem;
-    margin-top: 2rem; /* Add margin-top to move the header down */
-    background: #f8f9fa;
-    position: relative;
-}
-
-.header h1 {
-    margin: 0;
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
+    padding: 20px;
+    background-color: #f4f4f4;
+    border-bottom: 1px solid #ddd;
 }
 
 .create-app-button {
     padding: 10px 20px;
-    border-radius: 5px;
-    border: 1px solid #007bff;
-    background-color: #007bff;
+    font-size: 16px;
     color: #fff;
-    font-size: 1rem;
+    background-color: #007bff;
+    border: none;
+    border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    position: absolute;
-    right: 1rem;
 }
 
 .create-app-button:hover {
     background-color: #0056b3;
+}
+
+.app-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+.app-card {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 15px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.app-card p {
+    margin: 5px 0;
+}
+
+.app-card p:first-child {
+    font-weight: bold;
+}
+
+.app-card p strong {
+    font-weight: bold;
+}
+
+.app-card .edit-button {
+    padding: 5px 10px;
+    font-size: 14px;
+    color: #fff;
+    background-color: #28a745;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 10px;
+}
+
+.app-card .edit-button:hover {
+    background-color: #218838;
+}
+
+.app-card p:last-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }

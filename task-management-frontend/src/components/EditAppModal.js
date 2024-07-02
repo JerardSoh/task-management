@@ -10,7 +10,7 @@ import { useNavigate } from "react-router-dom";
 
 Modal.setAppElement("#root");
 
-const CreateAppModal = ({ isOpen, onRequestClose }) => {
+const EditAppModal = ({ isOpen, onRequestClose, appAcronym }) => {
     const initialFormState = {
         App_Acronym: "",
         App_Description: "",
@@ -27,6 +27,42 @@ const CreateAppModal = ({ isOpen, onRequestClose }) => {
     const [form, setForm] = useState(initialFormState);
     const [allGroups, setAllGroups] = useState([]);
     const [message, setMessage] = useState({ type: "", text: "" });
+
+    useEffect(() => {
+        if (isOpen) {
+            // Fetch app details
+            const fetchAppDetails = async () => {
+                try {
+                    const response = await axios.get(
+                        `${process.env.REACT_APP_API_URL}/app/${appAcronym}`,
+                        {
+                            withCredentials: true,
+                        }
+                    );
+                    setForm({
+                        ...response.data.app,
+                        App_startDate: new Date(
+                            response.data.app.App_startDate
+                        ),
+                        App_endDate: new Date(response.data.app.App_endDate),
+                    });
+                } catch (error) {
+                    setMessage({
+                        type: "error",
+                        text:
+                            error.response.data.message || "An error occurred",
+                    });
+                    if (error.request.status === 401) {
+                        navigate("/login");
+                    } else if (error.request.status === 403) {
+                        navigate("/");
+                    }
+                }
+            };
+
+            fetchAppDetails();
+        }
+    }, [isOpen, appAcronym, navigate]);
 
     useEffect(() => {
         const fetchGroups = async () => {
@@ -103,14 +139,18 @@ const CreateAppModal = ({ isOpen, onRequestClose }) => {
         }
 
         const formattedForm = {
-            ...form,
             App_startDate: format(App_startDate, "yyyy-MM-dd"),
             App_endDate: format(App_endDate, "yyyy-MM-dd"),
+            App_permit_Create: form.App_permit_Create,
+            App_permit_Open: form.App_permit_Open,
+            App_permit_toDoList: form.App_permit_toDoList,
+            App_permit_Doing: form.App_permit_Doing,
+            App_permit_Done: form.App_permit_Done,
         };
 
         try {
-            const response = await axios.post(
-                `${process.env.REACT_APP_API_URL}/app/new`,
+            const response = await axios.put(
+                `${process.env.REACT_APP_API_URL}/app/${form.App_Acronym}/edit`,
                 formattedForm,
                 {
                     withCredentials: true,
@@ -118,9 +158,8 @@ const CreateAppModal = ({ isOpen, onRequestClose }) => {
             );
             setMessage({
                 type: "success",
-                text: "App created successfully",
+                text: "App updated successfully",
             });
-            setForm(initialFormState);
         } catch (error) {
             setMessage({
                 type: "error",
@@ -144,12 +183,12 @@ const CreateAppModal = ({ isOpen, onRequestClose }) => {
         <Modal
             isOpen={isOpen}
             onRequestClose={handleClose}
-            contentLabel="Create App Modal"
+            contentLabel="Edit App Modal"
             className="modal-content"
             overlayClassName="modal-overlay"
         >
             <div className="modal-header">
-                <h2>Create New App</h2>
+                <h2>Edit App</h2>
                 <button onClick={handleClose} className="close-button">
                     ×
                 </button>
@@ -165,7 +204,8 @@ const CreateAppModal = ({ isOpen, onRequestClose }) => {
                         name="App_Acronym"
                         value={form.App_Acronym}
                         onChange={handleChange}
-                        required
+                        readOnly
+                        className="read-only"
                     />
                 </div>
                 <div>
@@ -174,6 +214,8 @@ const CreateAppModal = ({ isOpen, onRequestClose }) => {
                         name="App_Description"
                         value={form.App_Description}
                         onChange={handleChange}
+                        readOnly
+                        className="read-only"
                     />
                 </div>
                 <div>
@@ -183,7 +225,8 @@ const CreateAppModal = ({ isOpen, onRequestClose }) => {
                         name="App_Rnumber"
                         value={form.App_Rnumber}
                         onChange={handleChange}
-                        required
+                        readOnly
+                        className="read-only"
                     />
                 </div>
                 <div>
@@ -295,10 +338,10 @@ const CreateAppModal = ({ isOpen, onRequestClose }) => {
                         isClearable
                     />
                 </div>
-                <button type="submit">Create App</button>
+                <button type="submit">Save Changes</button>
             </form>
         </Modal>
     );
 };
 
-export default CreateAppModal;
+export default EditAppModal;

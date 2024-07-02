@@ -8,6 +8,7 @@ const STATUS_OK = 200;
 const STATUS_CREATED = 201;
 const STATUS_BAD_REQUEST = 400;
 const STATUS_INTERNAL_SERVER_ERROR = 500;
+const STATUS_NOT_FOUND = 404;
 
 // Validate date
 const validateDate = (date) => {
@@ -201,7 +202,110 @@ const createApp = asyncHandler(async (req, res) => {
     }
 });
 
+// Edit app route: /app/:App_Acronym/edit
+const editApp = asyncHandler(async (req, res) => {
+    const {
+        App_startDate,
+        App_endDate,
+        App_permit_Create,
+        App_permit_Open,
+        App_permit_toDoList,
+        App_permit_Doing,
+        App_permit_Done,
+    } = req.body;
+    const { App_Acronym } = req.params;
+
+    // Validate App_Acronym
+    if (!App_Acronym) {
+        throw new HttpError("Missing App acronym", STATUS_BAD_REQUEST);
+    }
+
+    // Validate dates
+    if (!App_startDate) {
+        throw new HttpError("Missing App start date", STATUS_BAD_REQUEST);
+    }
+    if (!App_endDate) {
+        throw new HttpError("Missing App end date", STATUS_BAD_REQUEST);
+    }
+    if (!validateDate(App_startDate) || !validateDate(App_endDate)) {
+        throw new HttpError("Invalid date format", STATUS_BAD_REQUEST);
+    }
+
+    const startDate = parseISO(App_startDate);
+    const endDate = parseISO(App_endDate);
+
+    if (isBefore(endDate, startDate)) {
+        throw new HttpError(
+            "End date cannot be before start date",
+            STATUS_BAD_REQUEST
+        );
+    }
+
+    const connection = await db.getConnection();
+
+    try {
+        await connection.beginTransaction();
+
+        // Check if the app exists
+        const [existingApp] = await db.query(
+            "SELECT * FROM App WHERE App_Acronym = ?",
+            [App_Acronym]
+        );
+        if (existingApp.length === 0) {
+            throw new HttpError("App not found", STATUS_NOT_FOUND);
+        }
+
+        // Update the app
+        await connection.execute(
+            "UPDATE App SET App_startDate = ?, App_endDate = ?, App_permit_Create = ?, App_permit_Open = ?, App_permit_toDoList = ?, App_permit_Doing = ?, App_permit_Done = ? WHERE App_Acronym = ?",
+            [
+                App_startDate,
+                App_endDate,
+                App_permit_Create || null,
+                App_permit_Open || null,
+                App_permit_toDoList || null,
+                App_permit_Doing || null,
+                App_permit_Done || null,
+                App_Acronym,
+            ]
+        );
+
+        await connection.commit();
+
+        res.status(STATUS_OK).json({
+            success: true,
+            message: "App updated successfully",
+        });
+    } catch (error) {
+        await connection.rollback();
+        console.error("Error details:", error);
+        throw new HttpError(
+            "Failed to update app",
+            STATUS_INTERNAL_SERVER_ERROR
+        );
+    } finally {
+        connection.release();
+    }
+});
+
+// Get app details route: /app/:App_Acronym
+const getAppDetails = asyncHandler(async (req, res) => {
+    const { App_Acronym } = req.params;
+
+    // Check if the app exists
+    const [app] = await db.query("SELECT * FROM App WHERE App_Acronym = ?", [
+        App_Acronym,
+    ]);
+    if (app.length === 0) {
+        throw new HttpError("App not found", STATUS_NOT_FOUND);
+    }
+
+    res.status(STATUS_OK).json({ success: true, app: app[0] });
+});
+
 module.exports = {
     createApp,
     getApps,
+    editApp,
+    getAppDetails,
 };

@@ -108,3 +108,10 @@
 .modal-form button:hover {
     background-color: #0056b3;
 }
+
+.read-only {
+    background-color: #f0f0f0;
+    color: #999;
+    pointer-events: none;
+    border: 1px solid #ddd;
+}
