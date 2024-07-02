@@ -72,7 +72,10 @@ const createApp = asyncHandler(async (req, res) => {
 
     // Validate App_Rnumber (Only positive integer and non-zero)
     if (!App_Rnumber) {
-        throw new HttpError("Missing App Rnumber", STATUS_BAD_REQUEST);
+        throw new HttpError(
+            "Missing App Rnumber or RNumber is 0",
+            STATUS_BAD_REQUEST
+        );
     }
     if (!/^[1-9]\d*$/.test(App_Rnumber)) {
         throw new HttpError(

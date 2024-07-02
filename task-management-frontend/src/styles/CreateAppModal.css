@@ -62,7 +62,7 @@
 
 .modal-form input,
 .modal-form textarea {
-    width: 100%;
+    width: 96%;
     padding: 8px; /* Reduced padding */
     border: 1px solid #ccc;
     border-radius: 5px;
@@ -75,17 +75,23 @@
 
 .message {
     margin-bottom: 15px; /* Reduced margin */
-    padding: 10px;
+    padding: 15px; /* Increased padding */
     border-radius: 5px;
     color: #fff;
+    font-size: 1rem; /* Increased font size */
+    font-weight: bold; /* Make text bold */
 }
 
 .message.success {
     background-color: #28a745;
+    color: #fff;
+    border: 2px solid #218838; /* Add border for better contrast */
 }
 
 .message.error {
     background-color: #dc3545;
+    color: #fff;
+    border: 2px solid #ff0000; /* Add border for better contrast */
 }
 
 .modal-form button {

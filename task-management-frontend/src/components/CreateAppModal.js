@@ -3,9 +3,10 @@ import Modal from "react-modal";
 import Select from "react-select";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { createApp, getAllGroups } from "../apiService";
+import axios from "axios";
 import { format, parseISO } from "date-fns";
 import "../styles/CreateAppModal.css";
+import { useNavigate } from "react-router-dom";
 
 Modal.setAppElement("#root");
 
@@ -22,7 +23,7 @@ const CreateAppModal = ({ isOpen, onRequestClose }) => {
         App_permit_Doing: "",
         App_permit_Done: "",
     };
-
+    const navigate = useNavigate();
     const [form, setForm] = useState(initialFormState);
     const [allGroups, setAllGroups] = useState([]);
     const [message, setMessage] = useState({ type: "", text: "" });
@@ -30,12 +31,28 @@ const CreateAppModal = ({ isOpen, onRequestClose }) => {
     useEffect(() => {
         const fetchGroups = async () => {
             try {
-                const groups = await getAllGroups();
+                const response = await axios.get(
+                    `${process.env.REACT_APP_API_URL}/group/all`,
+                    {
+                        withCredentials: true,
+                    }
+                );
                 setAllGroups(
-                    groups.map((group) => ({ value: group, label: group }))
+                    response.data.groups.map((group) => ({
+                        value: group,
+                        label: group,
+                    }))
                 );
             } catch (error) {
-                setMessage({ type: "error", text: error.message });
+                setMessage({
+                    type: "error",
+                    text: error.response.data.message || "An error occurred",
+                });
+                if (error.request.status === 401) {
+                    navigate("/login");
+                } else if (error.request.status === 403) {
+                    navigate("/");
+                }
             }
         };
 
@@ -55,7 +72,10 @@ const CreateAppModal = ({ isOpen, onRequestClose }) => {
     };
 
     const handleDateChange = (name, date) => {
-        setForm({ ...form, [name]: date ? format(date, "yyyy-MM-dd") : "" });
+        setForm({
+            ...form,
+            [name]: date ? format(date, "yyyy-MM-dd") : "",
+        });
     };
 
     const handleSubmit = async (e) => {
@@ -67,11 +87,28 @@ const CreateAppModal = ({ isOpen, onRequestClose }) => {
         };
 
         try {
-            await createApp(formattedForm);
-            setMessage({ type: "success", text: "App created successfully" });
-            setForm(initialFormState); // Reset form values
+            const response = await axios.post(
+                `${process.env.REACT_APP_API_URL}/app/new`,
+                formattedForm,
+                {
+                    withCredentials: true,
+                }
+            );
+            setMessage({
+                type: "success",
+                text: "App created successfully",
+            });
+            setForm(initialFormState);
         } catch (error) {
-            setMessage({ type: "error", text: error.message });
+            setMessage({
+                type: "error",
+                text: error.response.data.message || "An error occurred",
+            });
+            if (error.request.status === 401) {
+                navigate("/login");
+            } else if (error.request.status === 403) {
+                navigate("/");
+            }
         }
     };
 

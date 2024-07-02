@@ -32,7 +32,7 @@ app.options("*", cors());
 
 // Routes
 app.use("/user", authenticateToken, userRoutes);
-app.use("/group", authenticateToken, requireGroup("admin"), groupRoutes);
+app.use("/group", authenticateToken, groupRoutes);
 app.use("/app", authenticateToken, appRoutes);
 app.use("/", authRoutes);
 

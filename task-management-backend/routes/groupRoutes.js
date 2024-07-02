@@ -6,6 +6,6 @@ const { createGroup, getGroups } = require("../controllers/groupController");
 router.get("/all", getGroups);
 
 // Create a new group
-router.post("/new", createGroup);
+router.post("/new", requireGroup("admin"), createGroup);
 
 module.exports = router;
