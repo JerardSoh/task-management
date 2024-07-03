@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
+import PlansModal from "../components/PlansModal";
 import "../styles/ApplicationPage.css";
 
 const ApplicationPage = () => {
@@ -12,6 +13,7 @@ const ApplicationPage = () => {
         done: [],
         closed: [],
     });
+    const [isPlansModalOpen, setIsPlansModalOpen] = useState(false);
 
     useEffect(() => {
         const fetchTasks = async () => {
@@ -46,7 +48,9 @@ const ApplicationPage = () => {
                 <p>It is an application about {appAcronym}.</p>
                 <div className="header-buttons">
                     <button>Create Task</button>
-                    <button>Plans</button>
+                    <button onClick={() => setIsPlansModalOpen(true)}>
+                        Plans
+                    </button>
                 </div>
             </header>
             <div className="application-page">
@@ -73,6 +77,11 @@ const ApplicationPage = () => {
                     </div>
                 ))}
             </div>
+            <PlansModal
+                isOpen={isPlansModalOpen}
+                onRequestClose={() => setIsPlansModalOpen(false)}
+                appAcronym={appAcronym}
+            />
         </div>
     );
 };
