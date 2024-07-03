@@ -52,60 +52,6 @@ const createApp = asyncHandler(async (req, res) => {
         App_permit_Done,
     } = req.body;
 
-    // Validate App_Acronym (Only alphanumeric characters and underscores are allowed)
-    if (!App_Acronym) {
-        throw new HttpError("Missing App name", STATUS_BAD_REQUEST);
-    }
-    if (!/^[a-zA-Z0-9_]+$/.test(App_Acronym)) {
-        throw new HttpError(
-            "Invalid App_Acronym. App_Acronym can only contain alphanumeric characters and underscores.",
-            STATUS_BAD_REQUEST
-        );
-    }
-    // Check duplicate App_Acronym
-    const [existingApp] = await db.query(
-        "SELECT * FROM App WHERE App_Acronym = ?",
-        [App_Acronym]
-    );
-    if (existingApp.length > 0) {
-        throw new HttpError("App already exists", STATUS_BAD_REQUEST);
-    }
-
-    // Validate App_Rnumber (Only positive integer and non-zero)
-    if (!App_Rnumber) {
-        throw new HttpError(
-            "Missing App Rnumber or RNumber is 0",
-            STATUS_BAD_REQUEST
-        );
-    }
-    if (!/^[1-9]\d*$/.test(App_Rnumber)) {
-        throw new HttpError(
-            "Invalid App_Rnumber. App_Rnumber must be a positive integer and non-zero.",
-            STATUS_BAD_REQUEST
-        );
-    }
-
-    // Validate dates
-    if (!App_startDate) {
-        throw new HttpError("Missing App start date", STATUS_BAD_REQUEST);
-    }
-    if (!App_endDate) {
-        throw new HttpError("Missing App end date", STATUS_BAD_REQUEST);
-    }
-    if (!validateDate(App_startDate) || !validateDate(App_endDate)) {
-        throw new HttpError("Invalid date format", STATUS_BAD_REQUEST);
-    }
-
-    const startDate = parseISO(App_startDate);
-    const endDate = parseISO(App_endDate);
-
-    if (isBefore(endDate, startDate)) {
-        throw new HttpError(
-            "End date cannot be before start date",
-            STATUS_BAD_REQUEST
-        );
-    }
-
     const connection = await db.getConnection();
 
     try {

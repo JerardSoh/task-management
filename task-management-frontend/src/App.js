@@ -13,6 +13,7 @@ import UserManagementPage from "./components/UserManagementPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminProtectedRoute from "./components/AdminProtectedRoute";
 import NavigationBar from "./components/NavigationBar";
+import ApplicationPage from "./components/ApplicationPage";
 
 const App = () => {
     return (
@@ -38,6 +39,10 @@ const App = () => {
                                         </AdminProtectedRoute>
                                     }
                                 />
+                                <Route
+                                    path="/:appAcronym"
+                                    element={<ApplicationPage />}
+                                />{" "}
                                 <Route path="*" element={<Navigate to="/" />} />
                             </Routes>
                         </ProtectedRoute>

@@ -3,7 +3,7 @@ import axios from "axios";
 import CreateAppModal from "../components/CreateAppModal";
 import EditAppModal from "../components/EditAppModal";
 import "../styles/HomePage.css";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { format, parseISO } from "date-fns";
 
 const HomePage = () => {
@@ -80,27 +80,39 @@ const HomePage = () => {
             </header>
             <main className="app-grid">
                 {apps.map((app) => (
-                    <div key={app.App_Acronym} className="app-card">
-                        <p>
-                            <strong>Rnum:</strong> {app.App_Rnumber}
-                        </p>
-                        <p>
-                            <strong>Name:</strong> {app.App_Acronym}
-                        </p>
-                        <p>
-                            <strong>Desc:</strong> {app.App_Description}
-                        </p>
-                        <p>
-                            <strong>Duration:</strong>{" "}
-                            {formatDuration(app.App_startDate, app.App_endDate)}
-                        </p>
-                        <button
-                            className="edit-button"
-                            onClick={() => handleEditAppClick(app.App_Acronym)}
-                        >
-                            Edit
-                        </button>
-                    </div>
+                    <Link
+                        key={app.App_Acronym}
+                        to={`/${app.App_Acronym}`}
+                        className="app-card-link"
+                    >
+                        <div className="app-card">
+                            <p>
+                                <strong>Rnum:</strong> {app.App_Rnumber}
+                            </p>
+                            <p>
+                                <strong>Name:</strong> {app.App_Acronym}
+                            </p>
+                            <p>
+                                <strong>Desc:</strong> {app.App_Description}
+                            </p>
+                            <p>
+                                <strong>Duration:</strong>{" "}
+                                {formatDuration(
+                                    app.App_startDate,
+                                    app.App_endDate
+                                )}
+                            </p>
+                            <button
+                                className="edit-button"
+                                onClick={(e) => {
+                                    e.preventDefault(); // Prevent navigation when clicking edit button
+                                    handleEditAppClick(app.App_Acronym);
+                                }}
+                            >
+                                Edit
+                            </button>
+                        </div>
+                    </Link>
                 ))}
             </main>
             <CreateAppModal

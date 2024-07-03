@@ -12,7 +12,7 @@
     padding: 10px 20px;
     font-size: 16px;
     color: #fff;
-    background-color: #007bff;
+    background-color: #28a745;
     border: none;
     border-radius: 5px;
     cursor: pointer;
@@ -20,7 +20,7 @@
 }
 
 .create-app-button:hover {
-    background-color: #0056b3;
+    background-color: #218838;
 }
 
 .app-grid {

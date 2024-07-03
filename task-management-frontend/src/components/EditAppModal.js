@@ -156,10 +156,11 @@ const EditAppModal = ({ isOpen, onRequestClose, appAcronym }) => {
                     withCredentials: true,
                 }
             );
-            setMessage({
-                type: "success",
-                text: "App updated successfully",
-            });
+            // setMessage({
+            //     type: "success",
+            //     text: "App updated successfully",
+            // });
+            onRequestClose();
         } catch (error) {
             setMessage({
                 type: "error",
