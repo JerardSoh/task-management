@@ -42,7 +42,7 @@ const getTasks = asyncHandler(async (req, res) => {
 
 // Create a new task route: /task/:App_Acronym/create
 const createTask = asyncHandler(async (req, res) => {
-    const { Task_Name, Task_description, Task_notes, Task_plan } = req.body;
+    const { Task_Name, Task_description, Task_plan } = req.body;
     const { App_Acronym } = req.params;
     const Task_creator = req.user.username;
     const Task_owner = req.user.username;
@@ -139,6 +139,65 @@ const getTaskDetails = asyncHandler(async (req, res) => {
     }
 
     res.status(STATUS_OK).json({ success: true, task: task[0] });
+});
+
+// Get open task route: /task/:App_Acronym/:Task_id/open-to-todo
+const getOpenTask = asyncHandler(async (req, res) => {
+    const { Task_id } = req.params;
+    const { Task_Name, Task_description, Task_plan } = req.body;
+    const connection = await db.getConnection();
+
+    try {
+        await connection.beginTransaction();
+
+        // Check if the task exists
+        const [task] = await db.query("SELECT * FROM Task WHERE Task_id = ? ", [
+            Task_id,
+        ]);
+        if (task.length === 0) {
+            throw new HttpError("Task not found", STATUS_NOT_FOUND);
+        }
+
+        // Check if the task is in "Open" state
+        if (task[0].Task_state !== "open") {
+            throw new HttpError(
+                "Task is not in 'Open' state",
+                STATUS_BAD_REQUEST
+            );
+        }
+
+        // Update Task_state to "To-Do"
+        await connection.execute(
+            "UPDATE Task SET Task_state = 'todo' WHERE Task_id = ?",
+            [Task_id]
+        );
+
+        // Create notes with format of [Task_createDate, Task_state] Task_notes
+        const unformattedTask_createDate = new Date();
+        const Task_notes = `[${unformattedTask_createDate}, 'todo'] Task moved from 'Open' to 'To-Do'.\n ##########################################################\n`;
+
+        // Update Task_notes
+        await connection.execute(
+            "UPDATE Task SET Task_notes = CONCAT(Task_notes, ?) WHERE Task_id = ?",
+            [Task_notes, Task_id]
+        );
+
+        await connection.commit();
+
+        res.status(STATUS_OK).json({
+            success: true,
+            message: "Task moved from 'Open' to 'To-Do' successfully",
+        });
+    } catch (error) {
+        await connection.rollback();
+        console.error("Error details:", error);
+        throw new HttpError(
+            "Failed to move task from 'Open' to 'To-Do'",
+            STATUS_INTERNAL_SERVER_ERROR
+        );
+    } finally {
+        connection.release();
+    }
 });
 
 module.exports = {
