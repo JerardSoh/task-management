@@ -63,7 +63,6 @@ const createTask = asyncHandler(async (req, res) => {
         );
         // Create Task_id (<App_Acronym_App_Rnumber>)
         const Task_id = `${App_Acronym}_${app[0].App_Rnumber + 1}`;
-        console.log(Task_id);
 
         // Update App_Rnumber in App that is App_Acronym to be + 1
         await connection.execute(
@@ -88,6 +87,9 @@ const createTask = asyncHandler(async (req, res) => {
 
         // Set Task_state to "Open"
         const Task_state = "open";
+
+        // Create notes with format of [Task_createDate, Task_state] Task_notes
+        const Task_notes = `[${unformattedTask_createDate}, ${Task_state}] ${Task_creator} has created task.\n ##########################################################\n`;
 
         // Insert the new task
         await connection.execute(
