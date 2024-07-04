@@ -5,6 +5,7 @@ const {
     logout,
     checkAuth,
     isAdmin,
+    isProjectLead,
 } = require("../controllers/authController");
 const { authenticateToken, requireGroup } = require("../middleware/auth");
 
@@ -19,5 +20,8 @@ router.post("/logout", authenticateToken, logout);
 
 // Route for checking admin status (requires authentication)
 router.get("/admin", authenticateToken, requireGroup("admin"), isAdmin);
+
+// Route for checking project lead status (requires authentication)
+router.get("/projectlead", authenticateToken, isProjectLead);
 
 module.exports = router;

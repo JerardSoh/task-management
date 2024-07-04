@@ -11,6 +11,7 @@ const HomePage = () => {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [selectedAppAcronym, setSelectedAppAcronym] = useState(null);
     const [apps, setApps] = useState([]);
+    const [isProjectLead, setIsProjectLead] = useState(false);
     const [message, setMessage] = useState({ type: "", text: "" });
     const navigate = useNavigate();
 
@@ -38,6 +39,33 @@ const HomePage = () => {
         };
 
         fetchApps();
+    }, [navigate]);
+
+    useEffect(() => {
+        const checkProjectLeadStatus = async () => {
+            try {
+                console.log("Checking project lead status");
+                const response = await axios.get(
+                    `${process.env.REACT_APP_API_URL}/projectlead`,
+                    {
+                        withCredentials: true,
+                    }
+                );
+                setIsProjectLead(response.data.success);
+            } catch (error) {
+                setMessage({
+                    type: "error",
+                    text: error.response.data.message || "An error occurred",
+                });
+                if (error.request.status === 401) {
+                    navigate("/login");
+                } else if (error.request.status === 403) {
+                    navigate("/");
+                }
+            }
+        };
+
+        checkProjectLeadStatus();
     }, [navigate]);
 
     const handleCreateAppClick = () => {
@@ -71,12 +99,14 @@ const HomePage = () => {
         <div>
             <header className="header">
                 <h1>Applications</h1>
-                <button
-                    onClick={handleCreateAppClick}
-                    className="create-app-button"
-                >
-                    Create App
-                </button>
+                {isProjectLead && (
+                    <button
+                        onClick={handleCreateAppClick}
+                        className="create-app-button"
+                    >
+                        Create App
+                    </button>
+                )}
             </header>
             <main className="app-grid">
                 {apps.map((app) => (
@@ -102,15 +132,17 @@ const HomePage = () => {
                                     app.App_endDate
                                 )}
                             </p>
-                            <button
-                                className="edit-button"
-                                onClick={(e) => {
-                                    e.preventDefault(); // Prevent navigation when clicking edit button
-                                    handleEditAppClick(app.App_Acronym);
-                                }}
-                            >
-                                Edit
-                            </button>
+                            {isProjectLead && (
+                                <button
+                                    className="edit-button"
+                                    onClick={(e) => {
+                                        e.preventDefault(); // Prevent navigation when clicking edit button
+                                        handleEditAppClick(app.App_Acronym);
+                                    }}
+                                >
+                                    Edit
+                                </button>
+                            )}
                         </div>
                     </Link>
                 ))}

@@ -1,34 +1,4 @@
-.modal-overlay {
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
 
-.modal-content {
-    background-color: white;
-    border-radius: 8px;
-    padding: 20px;
-    width: 600px;
-    max-height: 80vh;
-    overflow-y: auto;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    position: relative;
-}
-
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-.close-button {
-    background: none;
-    border: none;
-    font-size: 1.5em;
-    cursor: pointer;
-}
 
 .message {
     margin-bottom: 20px;
@@ -69,34 +39,4 @@
     width: 100%;
     padding: 8px;
     margin: 5px 0;
-}
-
-.modal-form div {
-    margin-bottom: 10px;
-}
-
-.modal-form label {
-    display: block;
-    margin-bottom: 5px;
-}
-
-.modal-form input,
-.modal-form .date-picker {
-    width: 100%;
-    padding: 8px;
-    box-sizing: border-box;
-}
-
-.modal-form button {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-top: 10px;
-}
-
-.modal-form button:hover {
-    background-color: #0056b3;
 }

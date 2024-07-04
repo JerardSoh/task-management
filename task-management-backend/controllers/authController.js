@@ -3,6 +3,7 @@ const db = require("../db");
 const HttpError = require("../utils/httpError");
 const asyncHandler = require("../utils/asyncHandler");
 const { createAndSetToken } = require("../utils/tokenManager");
+const { checkGroup } = require("../middleware/auth");
 
 // Constants for HTTP status codes
 const STATUS_OK = 200;
@@ -50,7 +51,7 @@ const login = asyncHandler(async (req, res) => {
     // Create and set token in cookie
     createAndSetToken(req, res, user);
 
-    res.status(200).json({ success: true });
+    res.status(STATUS_OK).json({ success: true });
 });
 
 // checkAuth route: /auth
@@ -78,4 +79,25 @@ const logout = asyncHandler(async (req, res) => {
     });
 });
 
-module.exports = { login, logout, checkAuth, isAdmin };
+// isProjectLead route: /projectlead
+const isProjectLead = asyncHandler(async (req, res) => {
+    const username = req.user.username;
+
+    if (!username) {
+        throw new HttpError("User information is missing", STATUS_FORBIDDEN);
+    }
+
+    const isInGroup = await checkGroup(username, "projectlead");
+    if (!isInGroup) {
+        throw new HttpError(
+            "You do not have permission to access this resource",
+            STATUS_FORBIDDEN
+        );
+    }
+    res.status(STATUS_OK).json({
+        success: true,
+        message: "User is a project lead",
+    });
+});
+
+module.exports = { login, logout, checkAuth, isAdmin, isProjectLead };

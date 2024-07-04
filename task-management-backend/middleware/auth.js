@@ -61,4 +61,4 @@ const requireGroup = (groupname) => {
         next();
     });
 };
-module.exports = { authenticateToken, requireGroup };
+module.exports = { authenticateToken, requireGroup, checkGroup };
