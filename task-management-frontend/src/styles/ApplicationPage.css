@@ -1,51 +1,77 @@
+/* ApplicationPage.css */
 .application-page {
-    display: flex;
-    justify-content: space-around;
-    margin: 20px;
-  }
-  
-  .task-column {
-    flex: 1;
-    margin: 0 10px;
-    background-color: #f4f4f4;
-    border-radius: 8px;
-    padding: 10px;
-  }
-  
-  .task-column h2 {
-    text-align: center;
-  }
-  
-  .task-card {
-    background-color: white;
-    border-radius: 8px;
-    padding: 10px;
-    margin: 10px 0;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  }
-  
-  .header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 20px;
-    background-color: #007bff;
-    color: white;
-    border-radius: 8px;
-    margin: 20px;
-  }
-  
-  .header-buttons button {
-    margin-left: 10px;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 8px;
-    background-color: #28a745;
-    color: white;
-    cursor: pointer;
-  }
-  
-  .header-buttons button:hover {
-    background-color: #218838;
-  }
-  
+  display: flex;
+  justify-content: space-between;
+}
+
+.task-column {
+  flex: 1;
+  margin: 0 10px;
+}
+
+.task-column h2 {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.task-card {
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
+}
+
+.task-card:hover {
+  transform: scale(1.02);
+}
+
+.task-card h3 {
+  margin: 0;
+  font-size: 1.2em;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 5px;
+}
+
+.task-card p {
+  margin: 5px 0;
+}
+
+.task-card p strong {
+  display: inline-block;
+  width: 100px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #ddd;
+}
+
+.header h1 {
+  margin: 0;
+}
+
+.header-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.header-buttons button {
+  padding: 8px 16px;
+  border: none;
+  background-color: #007bff;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.header-buttons button:hover {
+  background-color: #0056b3;
+}

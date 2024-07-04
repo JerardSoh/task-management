@@ -1,0 +1,117 @@
+/* CreateTaskModal.css */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    position: relative;
+    width: 450px; /* Adjusted width to fit content */
+    max-width: 90%;
+    max-height: 90vh; /* Max height of the modal */
+    padding: 20px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    overflow-y: auto; /* Scrollable if content exceeds max height */
+    transform: scale(0.9); /* Scale down the content */
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.modal-header h2 {
+    margin: 0;
+}
+
+.modal-header .close-button {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: red; /* Make the close button red */
+    transition: color 0.3s ease;
+}
+
+.modal-header .close-button:hover {
+    color: darkred; /* Darker red on hover */
+}
+
+.modal-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Reduced gap */
+}
+
+.modal-form label {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.modal-form input,
+.modal-form textarea {
+    width: 96%;
+    padding: 8px; /* Reduced padding */
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 0.9rem; /* Reduced font size */
+}
+
+.modal-form textarea {
+    resize: vertical;
+}
+
+.message {
+    margin-bottom: 15px; /* Reduced margin */
+    padding: 15px; /* Increased padding */
+    border-radius: 5px;
+    color: #fff;
+    font-size: 1rem; /* Increased font size */
+    font-weight: bold; /* Make text bold */
+}
+
+.message.success {
+    background-color: #28a745;
+    color: #fff;
+    border: 2px solid #218838; /* Add border for better contrast */
+}
+
+.message.error {
+    background-color: #dc3545;
+    color: #fff;
+    border: 2px solid #ff0000; /* Add border for better contrast */
+}
+
+.modal-form button {
+    padding: 8px 15px; /* Reduced padding */
+    border: none;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: #fff;
+    font-size: 0.9rem; /* Reduced font size */
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.modal-form button:hover {
+    background-color: #0056b3;
+}
+
+.read-only {
+    background-color: #f0f0f0;
+    color: #999;
+    pointer-events: none;
+    border: 1px solid #ddd;
+}

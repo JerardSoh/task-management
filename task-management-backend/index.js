@@ -8,6 +8,7 @@ const userRoutes = require("./routes/userRoutes.js");
 const groupRoutes = require("./routes/groupRoutes.js");
 const appRoutes = require("./routes/appRoutes.js");
 const planRoutes = require("./routes/planRoutes.js");
+const taskRoutes = require("./routes/taskRoutes.js");
 const errorHandler = require("./utils/errorHandler");
 const { authenticateToken, requireGroup } = require("./middleware/auth");
 
@@ -36,6 +37,7 @@ app.use("/user", authenticateToken, userRoutes);
 app.use("/group", authenticateToken, groupRoutes);
 app.use("/app", authenticateToken, appRoutes);
 app.use("/plan", authenticateToken, planRoutes);
+app.use("/task", authenticateToken, taskRoutes);
 
 app.use("/", authRoutes);
 

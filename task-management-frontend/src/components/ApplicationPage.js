@@ -2,26 +2,22 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import PlansModal from "../components/PlansModal";
+import CreateTaskModal from "../components/CreateTaskModal";
 import "../styles/ApplicationPage.css";
 
 const ApplicationPage = () => {
     const { appAcronym } = useParams();
     const [isProjectManager, setIsProjectManager] = useState(false);
     const navigate = useNavigate();
-    const [tasks, setTasks] = useState({
-        open: [],
-        todo: [],
-        doing: [],
-        done: [],
-        closed: [],
-    });
+    const [tasks, setTasks] = useState([]);
     const [isPlansModalOpen, setIsPlansModalOpen] = useState(false);
+    const [isCreateTaskModalOpen, setIsCreateTaskModalOpen] = useState(false);
 
     useEffect(() => {
         const fetchTasks = async () => {
             try {
                 const response = await axios.get(
-                    `${process.env.REACT_APP_API_URL}/${appAcronym}/task/all`,
+                    `${process.env.REACT_APP_API_URL}/task/${appAcronym}/all`,
                     {
                         withCredentials: true,
                     }
@@ -41,7 +37,7 @@ const ApplicationPage = () => {
             try {
                 console.log("Checking project manager status");
                 const response = await axios.get(
-                    `${process.env.REACT_APP_API_URL}/projectmanager`,
+                    `${process.env.REACT_APP_API_URL}/auth/projectmanager`,
                     {
                         withCredentials: true,
                     }
@@ -68,13 +64,18 @@ const ApplicationPage = () => {
         { id: "closed", title: "Closed" },
     ];
 
+    const getTasksByState = (state) =>
+        tasks.filter((task) => task.Task_state === state);
+
     return (
         <div>
             <header className="header">
                 <h1>{appAcronym}</h1>
                 <p>It is an application about {appAcronym}.</p>
                 <div className="header-buttons">
-                    <button>Create Task</button>
+                    <button onClick={() => setIsCreateTaskModalOpen(true)}>
+                        Create Task
+                    </button>
                     {isProjectManager && (
                         <button onClick={() => setIsPlansModalOpen(true)}>
                             Plans
@@ -86,20 +87,21 @@ const ApplicationPage = () => {
                 {columns.map((column) => (
                     <div key={column.id} className="task-column">
                         <h2>{column.title}</h2>
-                        {tasks[column.id].map((task) => (
-                            <div key={task.id} className="task-card">
+                        {getTasksByState(column.id).map((task) => (
+                            <div key={task.Task_id} className="task-card">
+                                <h3>{task.Task_plan}</h3>
                                 <p>
-                                    <strong>Sprint:</strong> {task.sprint}
+                                    <strong>ID:</strong> {task.Task_id}
                                 </p>
                                 <p>
-                                    <strong>Name:</strong> {task.name}
+                                    <strong>Name:</strong> {task.Task_Name}
                                 </p>
                                 <p>
                                     <strong>Description:</strong>{" "}
-                                    {task.description}
+                                    {task.Task_description}
                                 </p>
                                 <p>
-                                    <strong>Owner:</strong> {task.owner}
+                                    <strong>Owner:</strong> {task.Task_owner}
                                 </p>
                             </div>
                         ))}
@@ -113,6 +115,11 @@ const ApplicationPage = () => {
                     appAcronym={appAcronym}
                 />
             )}
+            <CreateTaskModal
+                isOpen={isCreateTaskModalOpen}
+                onRequestClose={() => setIsCreateTaskModalOpen(false)}
+                appAcronym={appAcronym}
+            />
         </div>
     );
 };
