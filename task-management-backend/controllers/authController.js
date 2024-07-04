@@ -100,4 +100,32 @@ const isProjectLead = asyncHandler(async (req, res) => {
     });
 });
 
-module.exports = { login, logout, checkAuth, isAdmin, isProjectLead };
+// isProjectManager route: /projectmanager
+const isProjectManager = asyncHandler(async (req, res) => {
+    const username = req.user.username;
+
+    if (!username) {
+        throw new HttpError("User information is missing", STATUS_FORBIDDEN);
+    }
+
+    const isInGroup = await checkGroup(username, "projectmanager");
+    if (!isInGroup) {
+        throw new HttpError(
+            "You do not have permission to access this resource",
+            STATUS_FORBIDDEN
+        );
+    }
+    res.status(STATUS_OK).json({
+        success: true,
+        message: "User is a project manager",
+    });
+});
+
+module.exports = {
+    login,
+    logout,
+    checkAuth,
+    isAdmin,
+    isProjectLead,
+    isProjectManager,
+};

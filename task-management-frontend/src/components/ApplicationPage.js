@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import PlansModal from "../components/PlansModal";
 import "../styles/ApplicationPage.css";
 
 const ApplicationPage = () => {
     const { appAcronym } = useParams();
+    const [isProjectManager, setIsProjectManager] = useState(false);
+    const navigate = useNavigate();
     const [tasks, setTasks] = useState({
         open: [],
         todo: [],
@@ -33,6 +35,31 @@ const ApplicationPage = () => {
         fetchTasks();
     }, [appAcronym]);
 
+    // Check if user is a project manager
+    useEffect(() => {
+        const checkProjectManagerStatus = async () => {
+            try {
+                console.log("Checking project manager status");
+                const response = await axios.get(
+                    `${process.env.REACT_APP_API_URL}/projectmanager`,
+                    {
+                        withCredentials: true,
+                    }
+                );
+                setIsProjectManager(response.data.success);
+            } catch (error) {
+                console.error("Error checking project manager status", error);
+                if (error.request.status === 401) {
+                    navigate("/login");
+                } else if (error.request.status === 403) {
+                    navigate("/");
+                }
+            }
+        };
+
+        checkProjectManagerStatus();
+    }, [navigate]);
+
     const columns = [
         { id: "open", title: "Open" },
         { id: "todo", title: "To-Do" },
@@ -48,9 +75,11 @@ const ApplicationPage = () => {
                 <p>It is an application about {appAcronym}.</p>
                 <div className="header-buttons">
                     <button>Create Task</button>
-                    <button onClick={() => setIsPlansModalOpen(true)}>
-                        Plans
-                    </button>
+                    {isProjectManager && (
+                        <button onClick={() => setIsPlansModalOpen(true)}>
+                            Plans
+                        </button>
+                    )}
                 </div>
             </header>
             <div className="application-page">
@@ -77,11 +106,13 @@ const ApplicationPage = () => {
                     </div>
                 ))}
             </div>
-            <PlansModal
-                isOpen={isPlansModalOpen}
-                onRequestClose={() => setIsPlansModalOpen(false)}
-                appAcronym={appAcronym}
-            />
+            {isProjectManager && (
+                <PlansModal
+                    isOpen={isPlansModalOpen}
+                    onRequestClose={() => setIsPlansModalOpen(false)}
+                    appAcronym={appAcronym}
+                />
+            )}
         </div>
     );
 };
