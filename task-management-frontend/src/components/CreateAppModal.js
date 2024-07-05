@@ -145,19 +145,24 @@ const CreateAppModal = ({ isOpen, onRequestClose }) => {
             isOpen={isOpen}
             onRequestClose={handleClose}
             contentLabel="Create App Modal"
-            className="modal-content"
-            overlayClassName="modal-overlay"
+            className="create-app-modal-content"
+            overlayClassName="create-app-modal-overlay"
         >
-            <div className="modal-header">
+            <div className="create-app-modal-header">
                 <h2>Create New App</h2>
-                <button onClick={handleClose} className="close-button">
+                <button
+                    onClick={handleClose}
+                    className="create-app-modal-close-button"
+                >
                     ×
                 </button>
             </div>
             {message.text && (
-                <div className={`message ${message.type}`}>{message.text}</div>
+                <div className={`create-app-modal-message ${message.type}`}>
+                    {message.text}
+                </div>
             )}
-            <form onSubmit={handleSubmit} className="modal-form">
+            <form onSubmit={handleSubmit} className="create-app-modal-form">
                 <div>
                     <label>App Acronym:</label>
                     <input
@@ -194,7 +199,7 @@ const CreateAppModal = ({ isOpen, onRequestClose }) => {
                             handleDateChange("App_startDate", date)
                         }
                         dateFormat="dd-MM-yyyy"
-                        className="date-picker"
+                        className="create-app-modal-date-picker"
                         placeholderText="Select start date"
                     />
                 </div>
@@ -206,7 +211,7 @@ const CreateAppModal = ({ isOpen, onRequestClose }) => {
                             handleDateChange("App_endDate", date)
                         }
                         dateFormat="dd-MM-yyyy"
-                        className="date-picker"
+                        className="create-app-modal-date-picker"
                         placeholderText="Select end date"
                     />
                 </div>

@@ -62,7 +62,7 @@ const CreateTaskModal = ({ isOpen, onRequestClose, appAcronym }) => {
         e.preventDefault();
 
         try {
-            const response = await axios.post(
+            await axios.post(
                 `${process.env.REACT_APP_API_URL}/task/${appAcronym}/create`,
                 form,
                 {
@@ -93,26 +93,41 @@ const CreateTaskModal = ({ isOpen, onRequestClose, appAcronym }) => {
             isOpen={isOpen}
             onRequestClose={handleClose}
             contentLabel="Create Task Modal"
-            className="modal-content"
-            overlayClassName="modal-overlay"
+            className="create-task-modal-content"
+            overlayClassName="create-task-modal-overlay"
         >
-            <div className="modal-header">
+            <div className="create-task-modal-header">
                 <h2>Create Task</h2>
-                <button onClick={handleClose} className="close-button">
+                <button
+                    onClick={handleClose}
+                    className="create-task-modal-close-button"
+                >
                     ×
                 </button>
             </div>
             {message.text && (
-                <div className={`message ${message.type}`}>{message.text}</div>
+                <div className={`create-task-modal-message ${message.type}`}>
+                    {message.text}
+                </div>
             )}
-            <form onSubmit={handleSubmit} className="modal-form">
+            <form onSubmit={handleSubmit} className="create-task-modal-form">
                 <div>
                     <label>ID:</label>
-                    <input type="text" value="AUTO GENERATED" disabled />
+                    <input
+                        type="text"
+                        value="AUTO GENERATED"
+                        disabled
+                        className="create-task-modal-read-only"
+                    />
                 </div>
                 <div>
                     <label>Owner:</label>
-                    <input type="text" value="AUTO GENERATED" disabled />
+                    <input
+                        type="text"
+                        value="AUTO GENERATED"
+                        disabled
+                        className="create-task-modal-read-only"
+                    />
                 </div>
                 <div>
                     <label>Name:</label>

@@ -134,27 +134,32 @@ const OpenTaskModal = ({ isOpen, onRequestClose, task, appAcronym }) => {
             isOpen={isOpen}
             onRequestClose={handleClose}
             contentLabel="Open Task Modal"
-            className="modal-content"
-            overlayClassName="modal-overlay"
+            className="open-task-modal-content"
+            overlayClassName="open-task-modal-overlay"
         >
-            <div className="modal-header">
+            <div className="open-task-modal-header">
                 <h2>Open Task</h2>
-                <button onClick={handleClose} className="close-button">
+                <button
+                    onClick={handleClose}
+                    className="open-task-modal-close-button"
+                >
                     ×
                 </button>
             </div>
             {message.text && (
-                <div className={`message ${message.type}`}>{message.text}</div>
+                <div className={`open-task-modal-message ${message.type}`}>
+                    {message.text}
+                </div>
             )}
-            <div className="modal-form">
-                <div className="left-section">
+            <div className="open-task-modal-form">
+                <div className="open-task-modal-left-section">
                     <div>
                         <label>ID:</label>
                         <input
                             type="text"
                             value={task.Task_id}
                             disabled
-                            className="read-only"
+                            className="open-task-modal-read-only"
                         />
                     </div>
                     <div>
@@ -163,7 +168,7 @@ const OpenTaskModal = ({ isOpen, onRequestClose, task, appAcronym }) => {
                             type="text"
                             value={task.Task_owner}
                             disabled
-                            className="read-only"
+                            className="open-task-modal-read-only"
                         />
                     </div>
                     <div>
@@ -172,7 +177,7 @@ const OpenTaskModal = ({ isOpen, onRequestClose, task, appAcronym }) => {
                             type="text"
                             value={task.Task_Name}
                             disabled
-                            className="read-only"
+                            className="open-task-modal-read-only"
                         />
                     </div>
                     <div>
@@ -180,7 +185,7 @@ const OpenTaskModal = ({ isOpen, onRequestClose, task, appAcronym }) => {
                         <textarea
                             value={task.Task_description}
                             disabled
-                            className="read-only"
+                            className="open-task-modal-description"
                         />
                     </div>
                     <div>
@@ -197,12 +202,24 @@ const OpenTaskModal = ({ isOpen, onRequestClose, task, appAcronym }) => {
                             isClearable
                         />
                     </div>
-                    <button onClick={handleRelease}>Release</button>
-                    <button onClick={handleSavePlan}>Save Changes</button>
+                    <div className="open-task-modal-buttons">
+                        <button
+                            className="open-task-modal-button"
+                            onClick={handleRelease}
+                        >
+                            Release
+                        </button>
+                        <button
+                            className="open-task-modal-button"
+                            onClick={handleSavePlan}
+                        >
+                            Save Changes
+                        </button>
+                    </div>
                 </div>
-                <div className="right-section">
-                    <div className="task-notes">
-                        {task.Task_notes.split("\n").map((note, index) => (
+                <div className="open-task-modal-right-section">
+                    <div className="open-task-modal-notes">
+                        {form.Task_notes.split("\n").map((note, index) => (
                             <p key={index}>{note}</p>
                         ))}
                     </div>
@@ -210,8 +227,14 @@ const OpenTaskModal = ({ isOpen, onRequestClose, task, appAcronym }) => {
                         placeholder="Write notes here. Adjustable text box."
                         value={newNote}
                         onChange={handleNewNoteChange}
+                        className="open-task-modal-textarea"
                     />
-                    <button onClick={handleSubmitNote}>Submit</button>
+                    <button
+                        className="open-task-modal-submit-button"
+                        onClick={handleSubmitNote}
+                    >
+                        Submit
+                    </button>
                 </div>
             </div>
         </Modal>

@@ -40,7 +40,7 @@ const ApplicationPage = () => {
             try {
                 console.log("Checking project manager status");
                 const response = await axios.get(
-                    `${process.env.REACT_APP_API_URL}/auth/projectmanager`,
+                    `${process.env.REACT_APP_API_URL}/projectmanager`,
                     {
                         withCredentials: true,
                     }
@@ -100,17 +100,17 @@ const ApplicationPage = () => {
                                 }}
                             >
                                 <h3>{task.Task_plan}</h3>
-                                <p>
+                                <p className="task-info">
                                     <strong>ID:</strong> {task.Task_id}
                                 </p>
-                                <p>
+                                <p className="task-info">
                                     <strong>Name:</strong> {task.Task_Name}
                                 </p>
-                                <p>
+                                <p className="task-info">
                                     <strong>Description:</strong>{" "}
                                     {task.Task_description}
                                 </p>
-                                <p>
+                                <p className="task-info">
                                     <strong>Owner:</strong> {task.Task_owner}
                                 </p>
                             </div>

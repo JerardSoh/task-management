@@ -122,19 +122,24 @@ const PlansModal = ({ isOpen, onRequestClose, appAcronym }) => {
             isOpen={isOpen}
             onRequestClose={handleClose}
             contentLabel="Plans Modal"
-            className="modal-content"
-            overlayClassName="modal-overlay"
+            className="plans-modal-content"
+            overlayClassName="plans-modal-overlay"
         >
-            <div className="modal-header">
+            <div className="plans-modal-header">
                 <h2>Plans</h2>
-                <button onClick={handleClose} className="close-button">
+                <button
+                    onClick={handleClose}
+                    className="plans-modal-close-button"
+                >
                     ×
                 </button>
             </div>
             {message.text && (
-                <div className={`message ${message.type}`}>{message.text}</div>
+                <div className={`plans-modal-message ${message.type}`}>
+                    {message.text}
+                </div>
             )}
-            <div className="plans-list">
+            <div className="plans-modal-list">
                 <table>
                     <thead>
                         <tr>
@@ -164,7 +169,7 @@ const PlansModal = ({ isOpen, onRequestClose, appAcronym }) => {
                     </tbody>
                 </table>
             </div>
-            <form onSubmit={handleSubmit} className="modal-form">
+            <form onSubmit={handleSubmit} className="plans-modal-form">
                 <div>
                     <label>Plan Name:</label>
                     <input
@@ -183,7 +188,7 @@ const PlansModal = ({ isOpen, onRequestClose, appAcronym }) => {
                             handleDateChange("Plan_startDate", date)
                         }
                         dateFormat="dd-MM-yyyy"
-                        className="date-picker"
+                        className="plans-modal-date-picker"
                         placeholderText="Select start date"
                     />
                 </div>
@@ -195,7 +200,7 @@ const PlansModal = ({ isOpen, onRequestClose, appAcronym }) => {
                             handleDateChange("Plan_endDate", date)
                         }
                         dateFormat="dd-MM-yyyy"
-                        className="date-picker"
+                        className="plans-modal-date-picker"
                         placeholderText="Select end date"
                     />
                 </div>

@@ -1,5 +1,4 @@
-/* CreateAppModal.css */
-.modal-overlay {
+.create-app-modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -12,7 +11,7 @@
     z-index: 1000;
 }
 
-.modal-content {
+.create-app-modal-content {
     position: relative;
     width: 450px; /* Adjusted width to fit content */
     max-width: 90%;
@@ -25,18 +24,18 @@
     transform: scale(0.9); /* Scale down the content */
 }
 
-.modal-header {
+.create-app-modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
 }
 
-.modal-header h2 {
+.create-app-modal-header h2 {
     margin: 0;
 }
 
-.modal-header .close-button {
+.create-app-modal-close-button {
     background: none;
     border: none;
     font-size: 1.5rem;
@@ -45,23 +44,23 @@
     transition: color 0.3s ease;
 }
 
-.modal-header .close-button:hover {
+.create-app-modal-close-button:hover {
     color: darkred; /* Darker red on hover */
 }
 
-.modal-form {
+.create-app-modal-form {
     display: flex;
     flex-direction: column;
     gap: 15px; /* Reduced gap */
 }
 
-.modal-form label {
+.create-app-modal-form label {
     font-weight: bold;
     margin-bottom: 5px;
 }
 
-.modal-form input,
-.modal-form textarea {
+.create-app-modal-form input,
+.create-app-modal-form textarea {
     width: 96%;
     padding: 8px; /* Reduced padding */
     border: 1px solid #ccc;
@@ -69,11 +68,11 @@
     font-size: 0.9rem; /* Reduced font size */
 }
 
-.modal-form textarea {
-    resize: vertical;
+.create-app-modal-form textarea {
+    resize: vertical; /* Enable vertical resizing */
 }
 
-.message {
+.create-app-modal-message {
     margin-bottom: 15px; /* Reduced margin */
     padding: 15px; /* Increased padding */
     border-radius: 5px;
@@ -82,19 +81,19 @@
     font-weight: bold; /* Make text bold */
 }
 
-.message.success {
+.create-app-modal-message.success {
     background-color: #28a745;
     color: #fff;
     border: 2px solid #218838; /* Add border for better contrast */
 }
 
-.message.error {
+.create-app-modal-message.error {
     background-color: #dc3545;
     color: #fff;
     border: 2px solid #ff0000; /* Add border for better contrast */
 }
 
-.modal-form button {
+.create-app-modal-form button {
     padding: 8px 15px; /* Reduced padding */
     border: none;
     border-radius: 5px;
@@ -105,13 +104,30 @@
     transition: background-color 0.3s ease;
 }
 
-.modal-form button:hover {
+.create-app-modal-form button:hover {
     background-color: #0056b3;
 }
 
-.read-only {
+.create-app-modal-read-only {
     background-color: #f0f0f0;
     color: #999;
     pointer-events: none;
     border: 1px solid #ddd;
+}
+
+.create-app-modal-date-picker {
+    width: 96%;
+    padding: 8px; /* Reduced padding */
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 0.9rem; /* Reduced font size */
+}
+
+.create-app-modal-description {
+    background-color: #f0f0f0;
+    color: #999;
+    border: 1px solid #ddd;
+    resize: vertical; /* Enable vertical resizing */
+    overflow-y: auto;
+    max-height: 150px; /* Set a max height if needed */
 }

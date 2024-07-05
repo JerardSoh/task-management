@@ -184,7 +184,7 @@ const moveOpenTask = asyncHandler(async (req, res) => {
                 addTask_notes;
             await connection.execute(
                 "UPDATE Task SET Task_plan = ? WHERE Task_id = ?",
-                [Task_plan, Task_id]
+                [Task_plan || null, Task_id]
             );
         }
         // Update Task_notes
@@ -238,7 +238,7 @@ const saveTaskPlan = asyncHandler(async (req, res) => {
         // Update Task_plan
         await connection.execute(
             "UPDATE Task SET Task_plan = ? WHERE Task_id = ?",
-            [Task_plan, Task_id]
+            [Task_plan || null, Task_id]
         );
 
         // Create notes with format of [Task_createDate, Task_state] Task_notes
