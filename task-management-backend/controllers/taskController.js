@@ -141,10 +141,11 @@ const getTaskDetails = asyncHandler(async (req, res) => {
     res.status(STATUS_OK).json({ success: true, task: task[0] });
 });
 
-// Get open task route: /task/:App_Acronym/:Task_id/open-to-todo
-const getOpenTask = asyncHandler(async (req, res) => {
+// Move open task route: /task/:App_Acronym/:Task_id/open-to-todo
+const moveOpenTask = asyncHandler(async (req, res) => {
     const { Task_id } = req.params;
-    const { Task_Name, Task_description, Task_plan } = req.body;
+    const { Task_plan } = req.body;
+    const Task_owner = req.user.username;
     const connection = await db.getConnection();
 
     try {
@@ -174,12 +175,28 @@ const getOpenTask = asyncHandler(async (req, res) => {
 
         // Create notes with format of [Task_createDate, Task_state] Task_notes
         const unformattedTask_createDate = new Date();
-        const Task_notes = `[${unformattedTask_createDate}, 'todo'] Task moved from 'Open' to 'To-Do'.\n ##########################################################\n`;
+        let addTask_notes = `[${unformattedTask_createDate}, '${task[0].Task_state}'] ${req.user.username} has released the Task.\n ##########################################################\n`;
 
+        // Check if plan is updated and not the same as before
+        if (task[0].Task_plan !== Task_plan) {
+            addTask_notes =
+                `[${unformattedTask_createDate}, '${task[0].Task_state}'] ${req.user.username} has updated the Task plan to ${Task_plan}.\n ##########################################################\n` +
+                addTask_notes;
+            await connection.execute(
+                "UPDATE Task SET Task_plan = ? WHERE Task_id = ?",
+                [Task_plan, Task_id]
+            );
+        }
         // Update Task_notes
         await connection.execute(
-            "UPDATE Task SET Task_notes = CONCAT(Task_notes, ?) WHERE Task_id = ?",
-            [Task_notes, Task_id]
+            "UPDATE Task SET Task_notes = CONCAT(?, Task_notes) WHERE Task_id = ? ",
+            [addTask_notes, Task_id]
+        );
+
+        // Update Task_owner
+        await connection.execute(
+            "UPDATE Task SET Task_owner = ? WHERE Task_id = ?",
+            [Task_owner, Task_id]
         );
 
         await connection.commit();
@@ -200,8 +217,464 @@ const getOpenTask = asyncHandler(async (req, res) => {
     }
 });
 
+// Save task plan route: /task/:App_Acronym/:Task_id/save-plan
+const saveTaskPlan = asyncHandler(async (req, res) => {
+    const { Task_id } = req.params;
+    const { Task_plan } = req.body;
+    const Task_owner = req.user.username;
+    const connection = await db.getConnection();
+
+    try {
+        await connection.beginTransaction();
+
+        // Check if the task exists
+        const [task] = await db.query("SELECT * FROM Task WHERE Task_id = ? ", [
+            Task_id,
+        ]);
+        if (task.length === 0) {
+            throw new HttpError("Task not found", STATUS_NOT_FOUND);
+        }
+
+        // Update Task_plan
+        await connection.execute(
+            "UPDATE Task SET Task_plan = ? WHERE Task_id = ?",
+            [Task_plan, Task_id]
+        );
+
+        // Create notes with format of [Task_createDate, Task_state] Task_notes
+        const unformattedTask_createDate = new Date();
+        const addTask_notes = `[${unformattedTask_createDate}, '${task[0].Task_state}'] ${req.user.username} saved Task plan to ${Task_plan}.\n ##########################################################\n`;
+
+        // Update Task_notes
+        await connection.execute(
+            "UPDATE Task SET Task_notes = CONCAT(?, Task_notes) WHERE Task_id = ? ",
+            [addTask_notes, Task_id]
+        );
+
+        // Update Task_owner
+        await connection.execute(
+            "UPDATE Task SET Task_owner = ? WHERE Task_id = ?",
+            [Task_owner, Task_id]
+        );
+
+        await connection.commit();
+
+        res.status(STATUS_OK).json({
+            success: true,
+            message: "Task plan saved successfully",
+        });
+    } catch (error) {
+        await connection.rollback();
+        console.error("Error details:", error);
+        throw new HttpError(
+            "Failed to save task plan",
+            STATUS_INTERNAL_SERVER_ERROR
+        );
+    } finally {
+        connection.release();
+    }
+});
+
+// Move task from To-do to Doing route: /task/:App_Acronym/:Task_id/todo-to-doing
+const moveTodoTask = asyncHandler(async (req, res) => {
+    const { Task_id } = req.params;
+    const Task_owner = req.user.username;
+    const connection = await db.getConnection();
+
+    try {
+        await connection.beginTransaction();
+
+        // Check if the task exists
+        const [task] = await db.query("SELECT * FROM Task WHERE Task_id = ? ", [
+            Task_id,
+        ]);
+        if (task.length === 0) {
+            throw new HttpError("Task not found", STATUS_NOT_FOUND);
+        }
+
+        // Check if the task is in "To-Do" state
+        if (task[0].Task_state !== "todo") {
+            throw new HttpError(
+                "Task is not in 'To-Do' state",
+                STATUS_BAD_REQUEST
+            );
+        }
+
+        // Update Task_state to "Doing"
+        await connection.execute(
+            "UPDATE Task SET Task_state = 'doing' WHERE Task_id = ?",
+            [Task_id]
+        );
+
+        // Create notes with format of [Task_createDate, Task_state] Task_notes
+        const unformattedTask_createDate = new Date();
+        const addTask_notes = `[${unformattedTask_createDate}, '${task[0].Task_state}'] ${req.user.username} has acknowledged the Task.\n ##########################################################\n`;
+
+        // Update Task_notes
+        await connection.execute(
+            "UPDATE Task SET Task_notes = CONCAT(?, Task_notes) WHERE Task_id = ? ",
+            [addTask_notes, Task_id]
+        );
+
+        // Update Task_owner
+        await connection.execute(
+            "UPDATE Task SET Task_owner = ? WHERE Task_id = ?",
+            [Task_owner, Task_id]
+        );
+
+        await connection.commit();
+
+        res.status(STATUS_OK).json({
+            success: true,
+            message: "Task moved from 'To-Do' to 'Doing' successfully",
+        });
+    } catch (error) {
+        await connection.rollback();
+        console.error("Error details:", error);
+        throw new HttpError(
+            "Failed to move task from 'To-Do' to 'Doing'",
+            STATUS_INTERNAL_SERVER_ERROR
+        );
+    } finally {
+        connection.release();
+    }
+});
+
+// Move task from Doing to Done route: /task/:App_Acronym/:Task_id/doing-to-done
+const moveDoingTask = asyncHandler(async (req, res) => {
+    const { Task_id } = req.params;
+    const Task_owner = req.user.username;
+    const connection = await db.getConnection();
+
+    try {
+        await connection.beginTransaction();
+
+        // Check if the task exists
+        const [task] = await db.query("SELECT * FROM Task WHERE Task_id = ? ", [
+            Task_id,
+        ]);
+        if (task.length === 0) {
+            throw new HttpError("Task not found", STATUS_NOT_FOUND);
+        }
+
+        // Check if the task is in "Doing" state
+        if (task[0].Task_state !== "doing") {
+            throw new HttpError(
+                "Task is not in 'Doing' state",
+                STATUS_BAD_REQUEST
+            );
+        }
+
+        // Update Task_state to "Done"
+        await connection.execute(
+            "UPDATE Task SET Task_state = 'done' WHERE Task_id = ?",
+            [Task_id]
+        );
+
+        // Create notes with format of [Task_createDate, Task_state] Task_notes
+        const unformattedTask_createDate = new Date();
+        const addTask_notes = `[${unformattedTask_createDate}, '${task[0].Task_state}'] ${req.user.username} has completed the Task.\n ##########################################################\n`;
+
+        // Update Task_notes
+        await connection.execute(
+            "UPDATE Task SET Task_notes = CONCAT(?, Task_notes) WHERE Task_id = ? ",
+            [addTask_notes, Task_id]
+        );
+
+        // Update Task_owner
+        await connection.execute(
+            "UPDATE Task SET Task_owner = ? WHERE Task_id = ?",
+            [Task_owner, Task_id]
+        );
+
+        await connection.commit();
+
+        res.status(STATUS_OK).json({
+            success: true,
+            message: "Task moved from 'Doing' to 'Done' successfully",
+        });
+    } catch (error) {
+        await connection.rollback();
+        console.error("Error details:", error);
+        throw new HttpError(
+            "Failed to move task from 'Doing' to 'Done'",
+            STATUS_INTERNAL_SERVER_ERROR
+        );
+    } finally {
+        connection.release();
+    }
+});
+
+// Move back task from Doing to To-do route: /task/:App_Acronym/:Task_id/doing-to-todo
+const moveBackDoingTask = asyncHandler(async (req, res) => {
+    const { Task_id } = req.params;
+    const Task_owner = req.user.username;
+    const connection = await db.getConnection();
+
+    try {
+        await connection.beginTransaction();
+
+        // Check if the task exists
+        const [task] = await db.query("SELECT * FROM Task WHERE Task_id = ? ", [
+            Task_id,
+        ]);
+        if (task.length === 0) {
+            throw new HttpError("Task not found", STATUS_NOT_FOUND);
+        }
+
+        // Check if the task is in "Doing" state
+        if (task[0].Task_state !== "doing") {
+            throw new HttpError(
+                "Task is not in 'Doing' state",
+                STATUS_BAD_REQUEST
+            );
+        }
+
+        // Update Task_state to "To-Do"
+        await connection.execute(
+            "UPDATE Task SET Task_state = 'todo' WHERE Task_id = ?",
+            [Task_id]
+        );
+
+        // Create notes with format of [Task_createDate, Task_state] Task_notes
+        const unformattedTask_createDate = new Date();
+        const addTask_notes = `[${unformattedTask_createDate}, '${task[0].Task_state}'] ${req.user.username} has halted the Task back to To-Do.\n ##########################################################\n`;
+
+        // Update Task_notes
+        await connection.execute(
+            "UPDATE Task SET Task_notes = CONCAT(?, Task_notes) WHERE Task_id = ? ",
+            [addTask_notes, Task_id]
+        );
+
+        // Update Task_owner
+        await connection.execute(
+            "UPDATE Task SET Task_owner = ? WHERE Task_id = ?",
+            [Task_owner, Task_id]
+        );
+
+        await connection.commit();
+
+        res.status(STATUS_OK).json({
+            success: true,
+            message: "Task moved from 'Doing' to 'To-Do' successfully",
+        });
+    } catch (error) {
+        await connection.rollback();
+        console.error("Error details:", error);
+        throw new HttpError(
+            "Failed to move task from 'Doing' to 'To-Do'",
+            STATUS_INTERNAL_SERVER_ERROR
+        );
+    } finally {
+        connection.release();
+    }
+});
+
+// Move task from done to doing route: /task/:App_Acronym/:Task_id/done-to-doing
+const moveBackDoneTask = asyncHandler(async (req, res) => {
+    const { Task_id } = req.params;
+    const Task_owner = req.user.username;
+    const { Task_plan } = req.body;
+    const connection = await db.getConnection();
+
+    try {
+        await connection.beginTransaction();
+
+        // Check if the task exists
+        const [task] = await db.query("SELECT * FROM Task WHERE Task_id = ? ", [
+            Task_id,
+        ]);
+        if (task.length === 0) {
+            throw new HttpError("Task not found", STATUS_NOT_FOUND);
+        }
+
+        // Check if the task is in "Done" state
+        if (task[0].Task_state !== "done") {
+            throw new HttpError(
+                "Task is not in 'Done' state",
+                STATUS_BAD_REQUEST
+            );
+        }
+
+        // Update Task_state to "Doing"
+        await connection.execute(
+            "UPDATE Task SET Task_state = 'doing' WHERE Task_id = ?",
+            [Task_id]
+        );
+
+        // Create notes with format of [Task_createDate, Task_state] Task_notes
+        const unformattedTask_createDate = new Date();
+        let addTask_notes = "";
+
+        // Check if plan is updated and not the same as before
+        if (task[0].Task_plan !== Task_plan) {
+            addTask_notes += `[${unformattedTask_createDate}, '${task[0].Task_state}'] ${req.user.username} has updated the Task plan to ${Task_plan}.\n ##########################################################\n`;
+            await connection.execute(
+                "UPDATE Task SET Task_plan = ? WHERE Task_id = ?",
+                [Task_plan, Task_id]
+            );
+        }
+
+        addTask_notes = `[${unformattedTask_createDate}, '${task[0].Task_state}'] ${req.user.username} has rejected the Task from done state and moved it back to doing.\n ##########################################################\n + ${addTask_notes}`;
+
+        // Update Task_notes
+        await connection.execute(
+            "UPDATE Task SET Task_notes = CONCAT(?, Task_notes) WHERE Task_id = ? ",
+            [addTask_notes, Task_id]
+        );
+
+        // Update Task_owner
+        await connection.execute(
+            "UPDATE Task SET Task_owner = ? WHERE Task_id = ?",
+            [Task_owner, Task_id]
+        );
+
+        await connection.commit();
+
+        res.status(STATUS_OK).json({
+            success: true,
+            message: "Task moved from 'Done' to 'Doing' successfully",
+        });
+    } catch (error) {
+        await connection.rollback();
+        console.error("Error details:", error);
+        throw new HttpError(
+            "Failed to move task from 'Done' to 'Doing'",
+            STATUS_INTERNAL_SERVER_ERROR
+        );
+    } finally {
+        connection.release();
+    }
+});
+
+// Move task from Done to Closed route: /task/:App_Acronym/:Task_id/done-to-closed
+const moveDoneTask = asyncHandler(async (req, res) => {
+    const { Task_id } = req.params;
+    const Task_owner = req.user.username;
+    const connection = await db.getConnection();
+
+    try {
+        await connection.beginTransaction();
+
+        // Check if the task exists
+        const [task] = await db.query("SELECT * FROM Task WHERE Task_id = ? ", [
+            Task_id,
+        ]);
+        if (task.length === 0) {
+            throw new HttpError("Task not found", STATUS_NOT_FOUND);
+        }
+
+        // Check if the task is in "Done" state
+        if (task[0].Task_state !== "done") {
+            throw new HttpError(
+                "Task is not in 'Done' state",
+                STATUS_BAD_REQUEST
+            );
+        }
+
+        // Update Task_state to "Closed"
+        await connection.execute(
+            "UPDATE Task SET Task_state = 'closed' WHERE Task_id = ?",
+            [Task_id]
+        );
+
+        // Create notes with format of [Task_createDate, Task_state] Task_notes
+        const unformattedTask_createDate = new Date();
+        const addTask_notes = `[${unformattedTask_createDate}, '${task[0].Task_state}'] ${req.user.username} has closed the Task.\n ##########################################################\n`;
+
+        // Update Task_notes
+        await connection.execute(
+            "UPDATE Task SET Task_notes = CONCAT(?, Task_notes) WHERE Task_id = ? ",
+            [addTask_notes, Task_id]
+        );
+
+        // Update Task_owner
+        await connection.execute(
+            "UPDATE Task SET Task_owner = ? WHERE Task_id = ?",
+            [Task_owner, Task_id]
+        );
+
+        await connection.commit();
+
+        res.status(STATUS_OK).json({
+            success: true,
+            message: "Task moved from 'Done' to 'Closed' successfully",
+        });
+    } catch (error) {
+        await connection.rollback();
+        console.error("Error details:", error);
+        throw new HttpError(
+            "Failed to move task from 'Done' to 'Closed'",
+            STATUS_INTERNAL_SERVER_ERROR
+        );
+    } finally {
+        connection.release();
+    }
+});
+
+// Update task notes route: /task/:App_Acronym/:Task_id/update-notes
+const updateTaskNotes = asyncHandler(async (req, res) => {
+    const { Task_id } = req.params;
+    const { Task_notes } = req.body;
+    const Task_owner = req.user.username;
+    const connection = await db.getConnection();
+
+    try {
+        await connection.beginTransaction();
+
+        // Check if the task exists
+        const [task] = await db.query("SELECT * FROM Task WHERE Task_id = ? ", [
+            Task_id,
+        ]);
+        if (task.length === 0) {
+            throw new HttpError("Task not found", STATUS_NOT_FOUND);
+        }
+
+        // Create notes with format of [Task_createDate, Task_state] Task_notes
+        const unformattedTask_createDate = new Date();
+        let addTask_notes = `[${unformattedTask_createDate}, '${task[0].Task_state}'] ${req.user.username} added note: `;
+        addTask_notes += `${Task_notes}\n ##########################################################\n`;
+
+        // Update Task_notes
+        await connection.execute(
+            "UPDATE Task SET Task_notes = CONCAT(?, Task_notes) WHERE Task_id = ? ",
+            [addTask_notes, Task_id]
+        );
+
+        // Update Task_owner
+        await connection.execute(
+            "UPDATE Task SET Task_owner = ? WHERE Task_id = ?",
+            [Task_owner, Task_id]
+        );
+
+        await connection.commit();
+
+        res.status(STATUS_OK).json({
+            success: true,
+            message: "Task notes updated successfully",
+        });
+    } catch (error) {
+        await connection.rollback();
+        console.error("Error details:", error);
+        throw new HttpError(
+            "Failed to update task notes",
+            STATUS_INTERNAL_SERVER_ERROR
+        );
+    } finally {
+        connection.release();
+    }
+});
+
 module.exports = {
     getTasks,
     createTask,
     getTaskDetails,
+    moveOpenTask,
+    saveTaskPlan,
+    moveTodoTask,
+    moveDoingTask,
+    moveBackDoingTask,
+    moveDoneTask,
+    moveBackDoneTask,
+    updateTaskNotes,
 };

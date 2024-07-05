@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import PlansModal from "../components/PlansModal";
 import CreateTaskModal from "../components/CreateTaskModal";
+import OpenTaskModal from "../components/OpenTaskModal"; // Import OpenTaskModal
 import "../styles/ApplicationPage.css";
 
 const ApplicationPage = () => {
@@ -12,6 +13,8 @@ const ApplicationPage = () => {
     const [tasks, setTasks] = useState([]);
     const [isPlansModalOpen, setIsPlansModalOpen] = useState(false);
     const [isCreateTaskModalOpen, setIsCreateTaskModalOpen] = useState(false);
+    const [selectedTask, setSelectedTask] = useState(null); // Add state for selected task
+    const [isOpenTaskModalOpen, setIsOpenTaskModalOpen] = useState(false); // Add state for OpenTaskModal
 
     useEffect(() => {
         const fetchTasks = async () => {
@@ -88,7 +91,14 @@ const ApplicationPage = () => {
                     <div key={column.id} className="task-column">
                         <h2>{column.title}</h2>
                         {getTasksByState(column.id).map((task) => (
-                            <div key={task.Task_id} className="task-card">
+                            <div
+                                key={task.Task_id}
+                                className="task-card"
+                                onClick={() => {
+                                    setSelectedTask(task);
+                                    setIsOpenTaskModalOpen(true);
+                                }}
+                            >
                                 <h3>{task.Task_plan}</h3>
                                 <p>
                                     <strong>ID:</strong> {task.Task_id}
@@ -120,6 +130,14 @@ const ApplicationPage = () => {
                 onRequestClose={() => setIsCreateTaskModalOpen(false)}
                 appAcronym={appAcronym}
             />
+            {selectedTask && (
+                <OpenTaskModal
+                    isOpen={isOpenTaskModalOpen}
+                    onRequestClose={() => setIsOpenTaskModalOpen(false)}
+                    task={selectedTask}
+                    appAcronym={appAcronym}
+                />
+            )}
         </div>
     );
 };
