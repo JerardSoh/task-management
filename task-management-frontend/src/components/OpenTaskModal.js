@@ -7,15 +7,24 @@ import "../styles/OpenTaskModal.css";
 Modal.setAppElement("#root");
 
 const OpenTaskModal = ({ isOpen, onRequestClose, task, appAcronym }) => {
-    const initialFormState = {
+    const [form, setForm] = useState({
         Task_plan: task.Task_plan || "",
         Task_notes: task.Task_notes || "",
-    };
+    });
 
-    const [form, setForm] = useState(initialFormState);
     const [plans, setPlans] = useState([]);
     const [message, setMessage] = useState({ type: "", text: "" });
     const [newNote, setNewNote] = useState("");
+
+    useEffect(() => {
+        // Update form state when task prop changes
+        if (task) {
+            setForm({
+                Task_plan: task.Task_plan || "",
+                Task_notes: task.Task_notes || "",
+            });
+        }
+    }, [task]);
 
     useEffect(() => {
         const fetchPlans = async () => {
@@ -42,6 +51,26 @@ const OpenTaskModal = ({ isOpen, onRequestClose, task, appAcronym }) => {
 
         fetchPlans();
     }, [appAcronym]);
+
+    const fetchTaskDetails = async () => {
+        try {
+            const response = await axios.get(
+                `${process.env.REACT_APP_API_URL}/task/${appAcronym}/${task.Task_id}`,
+                {
+                    withCredentials: true,
+                }
+            );
+            setForm({
+                Task_plan: response.data.task.Task_plan || "",
+                Task_notes: response.data.task.Task_notes || "",
+            });
+        } catch (error) {
+            setMessage({
+                type: "error",
+                text: error.response.data.message || "An error occurred",
+            });
+        }
+    };
 
     const handleSelectChange = (name, selectedOption) => {
         setForm({
@@ -110,11 +139,8 @@ const OpenTaskModal = ({ isOpen, onRequestClose, task, appAcronym }) => {
                 type: "success",
                 text: "Note added successfully",
             });
-            setForm((prevState) => ({
-                ...prevState,
-                Task_notes: `${prevState.Task_notes}\n${newNote}`,
-            }));
             setNewNote("");
+            fetchTaskDetails(); // Fetch updated task details
         } catch (error) {
             setMessage({
                 type: "error",
