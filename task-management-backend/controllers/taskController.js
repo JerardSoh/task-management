@@ -179,9 +179,11 @@ const moveOpenTask = asyncHandler(async (req, res) => {
 
         // Check if plan is updated and not the same as before
         if (task[0].Task_plan !== Task_plan) {
-            addTask_notes =
-                `[${unformattedTask_createDate}, '${task[0].Task_state}'] ${req.user.username} has updated the Task plan to ${Task_plan}.\n ##########################################################\n` +
-                addTask_notes;
+            if (Task_plan) {
+                addTask_notes =
+                    `[${unformattedTask_createDate}, '${task[0].Task_state}'] ${req.user.username} has updated the Task plan to ${Task_plan}.\n ##########################################################\n` +
+                    addTask_notes;
+            }
             await connection.execute(
                 "UPDATE Task SET Task_plan = ? WHERE Task_id = ?",
                 [Task_plan || null, Task_id]
@@ -241,15 +243,20 @@ const saveTaskPlan = asyncHandler(async (req, res) => {
             [Task_plan || null, Task_id]
         );
 
+        let addTask_notes = "";
+
         // Create notes with format of [Task_createDate, Task_state] Task_notes
         const unformattedTask_createDate = new Date();
-        const addTask_notes = `[${unformattedTask_createDate}, '${task[0].Task_state}'] ${req.user.username} saved Task plan to ${Task_plan}.\n ##########################################################\n`;
-
-        // Update Task_notes
-        await connection.execute(
-            "UPDATE Task SET Task_notes = CONCAT(?, Task_notes) WHERE Task_id = ? ",
-            [addTask_notes, Task_id]
-        );
+        if (task[0].Task_plan !== Task_plan) {
+            if (Task_plan) {
+                addTask_notes += `[${unformattedTask_createDate}, '${task[0].Task_state}'] ${req.user.username} saved Task plan to ${Task_plan}.\n ##########################################################\n`;
+            }
+            // Update Task_notes
+            await connection.execute(
+                "UPDATE Task SET Task_notes = CONCAT(?, Task_notes) WHERE Task_id = ? ",
+                [addTask_notes, Task_id]
+            );
+        }
 
         // Update Task_owner
         await connection.execute(
@@ -508,10 +515,12 @@ const moveBackDoneTask = asyncHandler(async (req, res) => {
 
         // Check if plan is updated and not the same as before
         if (task[0].Task_plan !== Task_plan) {
-            addTask_notes += `[${unformattedTask_createDate}, '${task[0].Task_state}'] ${req.user.username} has updated the Task plan to ${Task_plan}.\n ##########################################################\n`;
+            if (Task_plan) {
+                addTask_notes += `[${unformattedTask_createDate}, '${task[0].Task_state}'] ${req.user.username} has updated the Task plan to ${Task_plan}.\n ##########################################################\n`;
+            }
             await connection.execute(
                 "UPDATE Task SET Task_plan = ? WHERE Task_id = ?",
-                [Task_plan, Task_id]
+                [Task_plan || null, Task_id]
             );
         }
 

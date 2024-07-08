@@ -15,6 +15,9 @@ router.post("/new", requireGroup("admin"), createUser); // Create a new user
 router.get("/all", requireGroup("admin"), getUsers); // Get all users
 router.put("/:username/update", requireGroup("admin"), updateUserDetails); // Update user details
 
+// User check group permissions route
+
+
 // User self-service routes
 router.get("/me", viewMyProfile); // View own profile
 router.put("/me/email", updateUserEmail); // Update own email

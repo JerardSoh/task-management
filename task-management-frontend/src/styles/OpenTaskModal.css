@@ -178,3 +178,8 @@
     width: 400px;
     height: 60px;
 }
+
+.open-task-modal-button.disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}

@@ -2,11 +2,11 @@ import React, { useState, useEffect } from "react";
 import Modal from "react-modal";
 import axios from "axios";
 import Select from "react-select";
-import "../styles/OpenTaskModal.css";
+import "../styles/OpenTaskModal.css"; // Use the same CSS as OpenTaskModal
 
 Modal.setAppElement("#root");
 
-const OpenTaskModal = ({ isOpen, onRequestClose, task, appAcronym }) => {
+const DoneTaskModal = ({ isOpen, onRequestClose, task, appAcronym }) => {
     const [form, setForm] = useState({
         Task_plan: task.Task_plan || "",
         Task_notes: task.Task_notes || "",
@@ -15,6 +15,7 @@ const OpenTaskModal = ({ isOpen, onRequestClose, task, appAcronym }) => {
     const [plans, setPlans] = useState([]);
     const [message, setMessage] = useState({ type: "", text: "" });
     const [newNote, setNewNote] = useState("");
+    const [initialPlan, setInitialPlan] = useState(task.Task_plan || "");
 
     useEffect(() => {
         // Update form state when task prop changes
@@ -23,6 +24,7 @@ const OpenTaskModal = ({ isOpen, onRequestClose, task, appAcronym }) => {
                 Task_plan: task.Task_plan || "",
                 Task_notes: task.Task_notes || "",
             });
+            setInitialPlan(task.Task_plan || "");
         }
     }, [task]);
 
@@ -82,10 +84,10 @@ const OpenTaskModal = ({ isOpen, onRequestClose, task, appAcronym }) => {
         setNewNote(e.target.value);
     };
 
-    const handleSavePlan = async () => {
+    const handleApprove = async () => {
         try {
             await axios.put(
-                `${process.env.REACT_APP_API_URL}/task/${appAcronym}/${task.Task_id}/save-plan`,
+                `${process.env.REACT_APP_API_URL}/task/${appAcronym}/${task.Task_id}/done-to-closed`,
                 { Task_plan: form.Task_plan },
                 {
                     withCredentials: true,
@@ -93,8 +95,9 @@ const OpenTaskModal = ({ isOpen, onRequestClose, task, appAcronym }) => {
             );
             setMessage({
                 type: "success",
-                text: "Plan updated successfully",
+                text: "Task approved successfully",
             });
+            onRequestClose();
         } catch (error) {
             setMessage({
                 type: "error",
@@ -103,20 +106,18 @@ const OpenTaskModal = ({ isOpen, onRequestClose, task, appAcronym }) => {
         }
     };
 
-    const handleRelease = async () => {
+    const handleReject = async () => {
         try {
             await axios.put(
-                `${process.env.REACT_APP_API_URL}/task/${appAcronym}/${task.Task_id}/open-to-todo`,
-                {
-                    Task_plan: form.Task_plan,
-                },
+                `${process.env.REACT_APP_API_URL}/task/${appAcronym}/${task.Task_id}/done-to-doing`,
+                {},
                 {
                     withCredentials: true,
                 }
             );
             setMessage({
                 type: "success",
-                text: "Task released successfully",
+                text: "Task rejected successfully",
             });
             onRequestClose();
         } catch (error) {
@@ -156,16 +157,18 @@ const OpenTaskModal = ({ isOpen, onRequestClose, task, appAcronym }) => {
         onRequestClose();
     };
 
+    const isPlanChanged = form.Task_plan !== initialPlan;
+
     return (
         <Modal
             isOpen={isOpen}
             onRequestClose={handleClose}
-            contentLabel="Open Task Modal"
+            contentLabel="Done Task Modal"
             className="open-task-modal-content"
             overlayClassName="open-task-modal-overlay"
         >
             <div className="open-task-modal-header">
-                <h2>Open Task</h2>
+                <h2>Done Task</h2>
                 <button
                     onClick={handleClose}
                     className="open-task-modal-close-button"
@@ -231,16 +234,19 @@ const OpenTaskModal = ({ isOpen, onRequestClose, task, appAcronym }) => {
                     </div>
                     <div className="open-task-modal-buttons">
                         <button
-                            className="open-task-modal-button"
-                            onClick={handleRelease}
+                            className={`open-task-modal-button ${
+                                isPlanChanged ? "disabled" : ""
+                            }`}
+                            onClick={handleApprove}
+                            disabled={isPlanChanged}
                         >
-                            Release
+                            Approve
                         </button>
                         <button
                             className="open-task-modal-button"
-                            onClick={handleSavePlan}
+                            onClick={handleReject}
                         >
-                            Save Changes
+                            Reject
                         </button>
                     </div>
                 </div>
@@ -268,4 +274,4 @@ const OpenTaskModal = ({ isOpen, onRequestClose, task, appAcronym }) => {
     );
 };
 
-export default OpenTaskModal;
+export default DoneTaskModal;

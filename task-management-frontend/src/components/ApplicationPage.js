@@ -3,7 +3,11 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import PlansModal from "../components/PlansModal";
 import CreateTaskModal from "../components/CreateTaskModal";
-import OpenTaskModal from "../components/OpenTaskModal"; // Import OpenTaskModal
+import OpenTaskModal from "../components/OpenTaskModal";
+import TodoTaskModal from "../components/TodoTaskModal";
+import DoingTaskModal from "../components/DoingTaskModal";
+import DoneTaskModal from "../components/DoneTaskModal";
+import ClosedTaskModal from "../components/ClosedTaskModal";
 import "../styles/ApplicationPage.css";
 
 const ApplicationPage = () => {
@@ -13,8 +17,12 @@ const ApplicationPage = () => {
     const [tasks, setTasks] = useState([]);
     const [isPlansModalOpen, setIsPlansModalOpen] = useState(false);
     const [isCreateTaskModalOpen, setIsCreateTaskModalOpen] = useState(false);
-    const [selectedTask, setSelectedTask] = useState(null); // Add state for selected task
-    const [isOpenTaskModalOpen, setIsOpenTaskModalOpen] = useState(false); // Add state for OpenTaskModal
+    const [selectedTask, setSelectedTask] = useState(null);
+    const [isOpenTaskModalOpen, setIsOpenTaskModalOpen] = useState(false);
+    const [isTodoTaskModalOpen, setIsTodoTaskModalOpen] = useState(false);
+    const [isDoingTaskModalOpen, setIsDoingTaskModalOpen] = useState(false);
+    const [isDoneTaskModalOpen, setIsDoneTaskModalOpen] = useState(false);
+    const [isClosedTaskModalOpen, setIsClosedTaskModalOpen] = useState(false);
 
     useEffect(() => {
         const fetchTasks = async () => {
@@ -95,8 +103,32 @@ const ApplicationPage = () => {
                                 key={task.Task_id}
                                 className="task-card"
                                 onClick={() => {
-                                    setSelectedTask(task);
-                                    setIsOpenTaskModalOpen(true);
+                                    if (task.Task_state === "open") {
+                                        setSelectedTask(task);
+                                        setIsOpenTaskModalOpen(true);
+                                    } else if (task.Task_state === "todo") {
+                                        setSelectedTask(task);
+                                        setIsTodoTaskModalOpen(true);
+                                    } else if (task.Task_state === "doing") {
+                                        setSelectedTask(task);
+                                        setIsDoingTaskModalOpen(true);
+                                    } else if (task.Task_state === "done") {
+                                        setSelectedTask(task);
+                                        setIsDoneTaskModalOpen(true);
+                                    } else if (task.Task_state === "closed") {
+                                        setSelectedTask(task);
+                                        setIsClosedTaskModalOpen(true);
+                                    }
+                                }}
+                                style={{
+                                    cursor:
+                                        task.Task_state === "open" ||
+                                        task.Task_state === "todo" ||
+                                        task.Task_state === "doing" ||
+                                        task.Task_state === "done" ||
+                                        task.Task_state === "closed"
+                                            ? "pointer"
+                                            : "default",
                                 }}
                             >
                                 <h3>{task.Task_plan}</h3>
@@ -131,12 +163,38 @@ const ApplicationPage = () => {
                 appAcronym={appAcronym}
             />
             {selectedTask && (
-                <OpenTaskModal
-                    isOpen={isOpenTaskModalOpen}
-                    onRequestClose={() => setIsOpenTaskModalOpen(false)}
-                    task={selectedTask}
-                    appAcronym={appAcronym}
-                />
+                <>
+                    <OpenTaskModal
+                        isOpen={isOpenTaskModalOpen}
+                        onRequestClose={() => setIsOpenTaskModalOpen(false)}
+                        task={selectedTask}
+                        appAcronym={appAcronym}
+                    />
+                    <TodoTaskModal
+                        isOpen={isTodoTaskModalOpen}
+                        onRequestClose={() => setIsTodoTaskModalOpen(false)}
+                        task={selectedTask}
+                        appAcronym={appAcronym}
+                    />
+                    <DoingTaskModal
+                        isOpen={isDoingTaskModalOpen}
+                        onRequestClose={() => setIsDoingTaskModalOpen(false)}
+                        task={selectedTask}
+                        appAcronym={appAcronym}
+                    />
+                    <DoneTaskModal
+                        isOpen={isDoneTaskModalOpen}
+                        onRequestClose={() => setIsDoneTaskModalOpen(false)}
+                        task={selectedTask}
+                        appAcronym={appAcronym}
+                    />
+                    <ClosedTaskModal
+                        isOpen={isClosedTaskModalOpen}
+                        onRequestClose={() => setIsClosedTaskModalOpen(false)}
+                        task={selectedTask}
+                        appAcronym={appAcronym}
+                    />
+                </>
             )}
         </div>
     );
