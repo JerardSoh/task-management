@@ -81,7 +81,7 @@ const TodoTaskModal = ({
         try {
             await axios.put(
                 `${process.env.REACT_APP_API_URL}/task/${appAcronym}/${task.Task_id}/update-notes`,
-                { Task_notes: newNote },
+                { Task_notes: newNote, Task_state: "todo" },
                 {
                     withCredentials: true,
                 }
@@ -113,7 +113,7 @@ const TodoTaskModal = ({
                 onRequestClose={handleClose}
                 task={task}
                 appAcronym={appAcronym}
-                state="todo"
+                state="Todo"
             />
         );
     }

@@ -103,7 +103,7 @@ const DoingTaskModal = ({
         try {
             await axios.put(
                 `${process.env.REACT_APP_API_URL}/task/${appAcronym}/${task.Task_id}/update-notes`,
-                { Task_notes: newNote },
+                { Task_notes: newNote, Task_state: "doing" },
                 {
                     withCredentials: true,
                 }
@@ -135,7 +135,7 @@ const DoingTaskModal = ({
                 onRequestClose={handleClose}
                 task={task}
                 appAcronym={appAcronym}
-                state="doing"
+                state="Doing"
             />
         );
     }

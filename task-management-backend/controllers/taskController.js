@@ -2,6 +2,7 @@ const db = require("../db");
 const HttpError = require("../utils/httpError");
 const asyncHandler = require("../utils/asyncHandler");
 const { format, parseISO, isBefore } = require("date-fns");
+const { checkGroup } = require("../middleware/auth");
 
 // Constants for HTTP status codes
 const STATUS_OK = 200;
@@ -50,6 +51,20 @@ const createTask = asyncHandler(async (req, res) => {
 
     try {
         await connection.beginTransaction();
+
+        // Check if user can create task
+        const [appPermitCreate] = await db.query(
+            "SELECT App_permit_Create FROM App WHERE App_Acronym = ? ",
+            [App_Acronym]
+        );
+        const appPermitCreateGroup = appPermitCreate[0].App_permit_Create;
+        const isInGroup = await checkGroup(Task_owner, appPermitCreateGroup);
+        if (!isInGroup) {
+            throw new HttpError(
+                "You do not have permission to create task",
+                STATUS_FORBIDDEN
+            );
+        }
 
         // Validate Task_Name
         if (!Task_Name) {
@@ -117,10 +132,14 @@ const createTask = asyncHandler(async (req, res) => {
     } catch (error) {
         await connection.rollback();
         console.error("Error details:", error);
-        throw new HttpError(
-            "Failed to create task",
-            STATUS_INTERNAL_SERVER_ERROR
-        );
+        if (error instanceof HttpError) {
+            throw error;
+        } else {
+            throw new HttpError(
+                "Failed to create task",
+                STATUS_INTERNAL_SERVER_ERROR
+            );
+        }
     } finally {
         connection.release();
     }
@@ -143,13 +162,27 @@ const getTaskDetails = asyncHandler(async (req, res) => {
 
 // Move open task route: /task/:App_Acronym/:Task_id/open-to-todo
 const moveOpenTask = asyncHandler(async (req, res) => {
-    const { Task_id } = req.params;
+    const { App_Acronym, Task_id } = req.params;
     const { Task_plan } = req.body;
     const Task_owner = req.user.username;
     const connection = await db.getConnection();
 
     try {
         await connection.beginTransaction();
+
+        // Check if user can move task from open to todo
+        const [appPermitOpen] = await db.query(
+            "SELECT App_permit_Open FROM App WHERE App_Acronym = ? ",
+            [App_Acronym]
+        );
+        const appPermitOpenGroup = appPermitOpen[0].App_permit_Open;
+        const isInGroup = await checkGroup(Task_owner, appPermitOpenGroup);
+        if (!isInGroup) {
+            throw new HttpError(
+                "You do not have permission to move task from open to todo",
+                STATUS_FORBIDDEN
+            );
+        }
 
         // Check if the task exists
         const [task] = await db.query("SELECT * FROM Task WHERE Task_id = ? ", [
@@ -210,10 +243,14 @@ const moveOpenTask = asyncHandler(async (req, res) => {
     } catch (error) {
         await connection.rollback();
         console.error("Error details:", error);
-        throw new HttpError(
-            "Failed to move task from 'Open' to 'To-Do'",
-            STATUS_INTERNAL_SERVER_ERROR
-        );
+        if (error instanceof HttpError) {
+            throw error;
+        } else {
+            throw new HttpError(
+                "Failed to move task from 'Open' to 'To-Do'",
+                STATUS_INTERNAL_SERVER_ERROR
+            );
+        }
     } finally {
         connection.release();
     }
@@ -221,13 +258,27 @@ const moveOpenTask = asyncHandler(async (req, res) => {
 
 // Save task plan route: /task/:App_Acronym/:Task_id/save-plan
 const saveTaskPlan = asyncHandler(async (req, res) => {
-    const { Task_id } = req.params;
+    const { App_Acronym, Task_id } = req.params;
     const { Task_plan } = req.body;
     const Task_owner = req.user.username;
     const connection = await db.getConnection();
 
     try {
         await connection.beginTransaction();
+
+        // Check if user can save task plan
+        const [appPermitOpen] = await db.query(
+            "SELECT App_permit_Open FROM App WHERE App_Acronym = ? ",
+            [App_Acronym]
+        );
+        const appPermitOpenGroup = appPermitOpen[0].App_permit_Open;
+        const isInGroup = await checkGroup(Task_owner, appPermitOpenGroup);
+        if (!isInGroup) {
+            throw new HttpError(
+                "You do not have permission to save the plan",
+                STATUS_FORBIDDEN
+            );
+        }
 
         // Check if the task exists
         const [task] = await db.query("SELECT * FROM Task WHERE Task_id = ? ", [
@@ -284,12 +335,26 @@ const saveTaskPlan = asyncHandler(async (req, res) => {
 
 // Move task from To-do to Doing route: /task/:App_Acronym/:Task_id/todo-to-doing
 const moveTodoTask = asyncHandler(async (req, res) => {
-    const { Task_id } = req.params;
+    const { App_Acronym, Task_id } = req.params;
     const Task_owner = req.user.username;
     const connection = await db.getConnection();
 
     try {
         await connection.beginTransaction();
+
+        // Check if user can move task from todo to doing
+        const [appPermitToDoList] = await db.query(
+            "SELECT App_permit_toDoList FROM App WHERE App_Acronym = ? ",
+            [App_Acronym]
+        );
+        const appPermitToDoListGroup = appPermitToDoList[0].App_permit_toDoList;
+        const isInGroup = await checkGroup(Task_owner, appPermitToDoListGroup);
+        if (!isInGroup) {
+            throw new HttpError(
+                "You do not have permission to move task from todo to doing",
+                STATUS_FORBIDDEN
+            );
+        }
 
         // Check if the task exists
         const [task] = await db.query("SELECT * FROM Task WHERE Task_id = ? ", [
@@ -338,10 +403,14 @@ const moveTodoTask = asyncHandler(async (req, res) => {
     } catch (error) {
         await connection.rollback();
         console.error("Error details:", error);
-        throw new HttpError(
-            "Failed to move task from 'To-Do' to 'Doing'",
-            STATUS_INTERNAL_SERVER_ERROR
-        );
+        if (error instanceof HttpError) {
+            throw error;
+        } else {
+            throw new HttpError(
+                "Failed to move task from 'To-Do' to 'Doing'",
+                STATUS_INTERNAL_SERVER_ERROR
+            );
+        }
     } finally {
         connection.release();
     }
@@ -349,12 +418,26 @@ const moveTodoTask = asyncHandler(async (req, res) => {
 
 // Move task from Doing to Done route: /task/:App_Acronym/:Task_id/doing-to-done
 const moveDoingTask = asyncHandler(async (req, res) => {
-    const { Task_id } = req.params;
+    const { App_Acronym, Task_id } = req.params;
     const Task_owner = req.user.username;
     const connection = await db.getConnection();
 
     try {
         await connection.beginTransaction();
+
+        // Check if user can move task from doing to done
+        const [appPermitDoing] = await db.query(
+            "SELECT App_permit_Doing FROM App WHERE App_Acronym = ? ",
+            [App_Acronym]
+        );
+        const appPermitDoingGroup = appPermitDoing[0].App_permit_Doing;
+        const isInGroup = await checkGroup(Task_owner, appPermitDoingGroup);
+        if (!isInGroup) {
+            throw new HttpError(
+                "You do not have permission to move task from doing to done",
+                STATUS_FORBIDDEN
+            );
+        }
 
         // Check if the task exists
         const [task] = await db.query("SELECT * FROM Task WHERE Task_id = ? ", [
@@ -403,10 +486,14 @@ const moveDoingTask = asyncHandler(async (req, res) => {
     } catch (error) {
         await connection.rollback();
         console.error("Error details:", error);
-        throw new HttpError(
-            "Failed to move task from 'Doing' to 'Done'",
-            STATUS_INTERNAL_SERVER_ERROR
-        );
+        if (error instanceof HttpError) {
+            throw error;
+        } else {
+            throw new HttpError(
+                "Failed to move task from 'Doing' to 'Done'",
+                STATUS_INTERNAL_SERVER_ERROR
+            );
+        }
     } finally {
         connection.release();
     }
@@ -414,12 +501,26 @@ const moveDoingTask = asyncHandler(async (req, res) => {
 
 // Move back task from Doing to To-do route: /task/:App_Acronym/:Task_id/doing-to-todo
 const moveBackDoingTask = asyncHandler(async (req, res) => {
-    const { Task_id } = req.params;
+    const { App_Acronym, Task_id } = req.params;
     const Task_owner = req.user.username;
     const connection = await db.getConnection();
 
     try {
         await connection.beginTransaction();
+
+        // Check if user can move task from doing to todo
+        const [appPermitDoing] = await db.query(
+            "SELECT App_permit_Doing FROM App WHERE App_Acronym = ? ",
+            [App_Acronym]
+        );
+        const appPermitDoingGroup = appPermitDoing[0].App_permit_Doing;
+        const isInGroup = await checkGroup(Task_owner, appPermitDoingGroup);
+        if (!isInGroup) {
+            throw new HttpError(
+                "You do not have permission to move task from doing to todo",
+                STATUS_FORBIDDEN
+            );
+        }
 
         // Check if the task exists
         const [task] = await db.query("SELECT * FROM Task WHERE Task_id = ? ", [
@@ -468,10 +569,14 @@ const moveBackDoingTask = asyncHandler(async (req, res) => {
     } catch (error) {
         await connection.rollback();
         console.error("Error details:", error);
-        throw new HttpError(
-            "Failed to move task from 'Doing' to 'To-Do'",
-            STATUS_INTERNAL_SERVER_ERROR
-        );
+        if (error instanceof HttpError) {
+            throw error;
+        } else {
+            throw new HttpError(
+                "Failed to move task from 'Doing' to 'To-Do'",
+                STATUS_INTERNAL_SERVER_ERROR
+            );
+        }
     } finally {
         connection.release();
     }
@@ -479,13 +584,27 @@ const moveBackDoingTask = asyncHandler(async (req, res) => {
 
 // Move task from done to doing route: /task/:App_Acronym/:Task_id/done-to-doing
 const moveBackDoneTask = asyncHandler(async (req, res) => {
-    const { Task_id } = req.params;
+    const { App_Acronym, Task_id } = req.params;
     const Task_owner = req.user.username;
     const { Task_plan } = req.body;
     const connection = await db.getConnection();
 
     try {
         await connection.beginTransaction();
+
+        // Check if user can move task from done to doing
+        const [appPermitDone] = await db.query(
+            "SELECT App_permit_Done FROM App WHERE App_Acronym = ? ",
+            [App_Acronym]
+        );
+        const appPermitDoneGroup = appPermitDone[0].App_permit_Done;
+        const isInGroup = await checkGroup(Task_owner, appPermitDoneGroup);
+        if (!isInGroup) {
+            throw new HttpError(
+                "You do not have permission to move task from done to doing",
+                STATUS_FORBIDDEN
+            );
+        }
 
         // Check if the task exists
         const [task] = await db.query("SELECT * FROM Task WHERE Task_id = ? ", [
@@ -547,10 +666,14 @@ const moveBackDoneTask = asyncHandler(async (req, res) => {
     } catch (error) {
         await connection.rollback();
         console.error("Error details:", error);
-        throw new HttpError(
-            "Failed to move task from 'Done' to 'Doing'",
-            STATUS_INTERNAL_SERVER_ERROR
-        );
+        if (error instanceof HttpError) {
+            throw error;
+        } else {
+            throw new HttpError(
+                "Failed to move task from 'Doing' to 'To-Do'",
+                STATUS_INTERNAL_SERVER_ERROR
+            );
+        }
     } finally {
         connection.release();
     }
@@ -558,12 +681,26 @@ const moveBackDoneTask = asyncHandler(async (req, res) => {
 
 // Move task from Done to Closed route: /task/:App_Acronym/:Task_id/done-to-closed
 const moveDoneTask = asyncHandler(async (req, res) => {
-    const { Task_id } = req.params;
+    const { App_Acronym, Task_id } = req.params;
     const Task_owner = req.user.username;
     const connection = await db.getConnection();
 
     try {
         await connection.beginTransaction();
+
+        // Check if user can move task from done to closed
+        const [appPermitDone] = await db.query(
+            "SELECT App_permit_Done FROM App WHERE App_Acronym = ? ",
+            [App_Acronym]
+        );
+        const appPermitDoneGroup = appPermitDone[0].App_permit_Done;
+        const isInGroup = await checkGroup(Task_owner, appPermitDoneGroup);
+        if (!isInGroup) {
+            throw new HttpError(
+                "You do not have permission to move task from done to closed",
+                STATUS_FORBIDDEN
+            );
+        }
 
         // Check if the task exists
         const [task] = await db.query("SELECT * FROM Task WHERE Task_id = ? ", [
@@ -612,10 +749,14 @@ const moveDoneTask = asyncHandler(async (req, res) => {
     } catch (error) {
         await connection.rollback();
         console.error("Error details:", error);
-        throw new HttpError(
-            "Failed to move task from 'Done' to 'Closed'",
-            STATUS_INTERNAL_SERVER_ERROR
-        );
+        if (error instanceof HttpError) {
+            throw error;
+        } else {
+            throw new HttpError(
+                "Failed to move task from 'Doing' to 'To-Do'",
+                STATUS_INTERNAL_SERVER_ERROR
+            );
+        }
     } finally {
         connection.release();
     }
@@ -623,13 +764,37 @@ const moveDoneTask = asyncHandler(async (req, res) => {
 
 // Update task notes route: /task/:App_Acronym/:Task_id/update-notes
 const updateTaskNotes = asyncHandler(async (req, res) => {
-    const { Task_id } = req.params;
-    const { Task_notes } = req.body;
+    const { App_Acronym, Task_id } = req.params;
+    const { Task_notes, Task_state } = req.body;
     const Task_owner = req.user.username;
     const connection = await db.getConnection();
 
     try {
         await connection.beginTransaction();
+
+        // Get app permit group for open/todo/doing/done
+        const [appPermits] = await db.query(
+            "SELECT App_permit_Open, App_permit_toDoList, App_permit_Doing, App_permit_Done FROM App WHERE App_Acronym = ? ",
+            [App_Acronym]
+        );
+        // Check if task_state is open/todo/doing/done and user is in the group
+        let appPermitGroup = "";
+        if (Task_state === "open") {
+            appPermitGroup = appPermits[0].App_permit_Open;
+        } else if (Task_state === "todo") {
+            appPermitGroup = appPermits[0].App_permit_toDoList;
+        } else if (Task_state === "doing") {
+            appPermitGroup = appPermits[0].App_permit_Doing;
+        } else if (Task_state === "done") {
+            appPermitGroup = appPermits[0].App_permit_Done;
+        }
+        const isInGroup = await checkGroup(Task_owner, appPermitGroup);
+        if (!isInGroup) {
+            throw new HttpError(
+                "You do not have permission to update task notes",
+                STATUS_FORBIDDEN
+            );
+        }
 
         // Check if the task exists
         const [task] = await db.query("SELECT * FROM Task WHERE Task_id = ? ", [

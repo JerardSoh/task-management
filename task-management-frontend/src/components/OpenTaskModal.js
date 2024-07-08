@@ -19,6 +19,7 @@ const OpenTaskModal = ({
         Task_notes: task.Task_notes || "",
     });
 
+    const [initialPlan, setInitialPlan] = useState(task.Task_plan || "");
     const [plans, setPlans] = useState([]);
     const [message, setMessage] = useState({ type: "", text: "" });
     const [newNote, setNewNote] = useState("");
@@ -30,6 +31,7 @@ const OpenTaskModal = ({
                 Task_plan: task.Task_plan || "",
                 Task_notes: task.Task_notes || "",
             });
+            setInitialPlan(task.Task_plan || ""); // Store the initial plan
         }
     }, [task]);
 
@@ -138,7 +140,7 @@ const OpenTaskModal = ({
         try {
             await axios.put(
                 `${process.env.REACT_APP_API_URL}/task/${appAcronym}/${task.Task_id}/update-notes`,
-                { Task_notes: newNote },
+                { Task_notes: newNote, Task_state: "open" },
                 {
                     withCredentials: true,
                 }
@@ -160,6 +162,10 @@ const OpenTaskModal = ({
     const handleClose = () => {
         setMessage({ type: "", text: "" });
         setNewNote("");
+        setForm((prevForm) => ({
+            ...prevForm,
+            Task_plan: initialPlan, // Reset Task_plan to initial value
+        }));
         onRequestClose();
     };
 
@@ -170,7 +176,7 @@ const OpenTaskModal = ({
                 onRequestClose={handleClose}
                 task={task}
                 appAcronym={appAcronym}
-                state="open"
+                state="Open"
             />
         );
     }

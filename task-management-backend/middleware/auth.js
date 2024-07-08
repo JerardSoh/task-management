@@ -9,11 +9,15 @@ const STATUS_FORBIDDEN = 403;
 
 // Function to check if user is in a group
 const checkGroup = async (username, groupname) => {
-    const [result] = await db.execute(
-        "SELECT * FROM usergroup WHERE username = ? AND groupname = ?",
-        [username, groupname]
-    );
-    return result.length > 0;
+    try {
+        const [result] = await db.execute(
+            "SELECT * FROM usergroup WHERE username = ? AND groupname = ?",
+            [username, groupname]
+        );
+        return result.length > 0;
+    } catch (err) {
+        throw new HttpError("Failed to check group", STATUS_UNAUTHORIZED);
+    }
 };
 
 // Middleware to authenticate token

@@ -69,9 +69,10 @@ const DoneTaskModal = ({
                     withCredentials: true,
                 }
             );
-            setForm({
+            setForm((prevForm) => ({
+                ...prevForm,
                 Task_notes: response.data.task.Task_notes || "",
-            });
+            }));
         } catch (error) {
             setMessage({
                 type: "error",
@@ -95,7 +96,7 @@ const DoneTaskModal = ({
         try {
             await axios.put(
                 `${process.env.REACT_APP_API_URL}/task/${appAcronym}/${task.Task_id}/done-to-closed`,
-                { Task_plan: form.Task_plan },
+                {},
                 {
                     withCredentials: true,
                 }
@@ -117,7 +118,7 @@ const DoneTaskModal = ({
         try {
             await axios.put(
                 `${process.env.REACT_APP_API_URL}/task/${appAcronym}/${task.Task_id}/done-to-doing`,
-                {},
+                { Task_plan: form.Task_plan },
                 {
                     withCredentials: true,
                 }
@@ -139,7 +140,7 @@ const DoneTaskModal = ({
         try {
             await axios.put(
                 `${process.env.REACT_APP_API_URL}/task/${appAcronym}/${task.Task_id}/update-notes`,
-                { Task_notes: newNote },
+                { Task_notes: newNote, Task_state: "done" },
                 {
                     withCredentials: true,
                 }
@@ -161,6 +162,10 @@ const DoneTaskModal = ({
     const handleClose = () => {
         setMessage({ type: "", text: "" });
         setNewNote("");
+        setForm((prevForm) => ({
+            ...prevForm,
+            Task_plan: initialPlan, // Reset Task_plan to initial value
+        }));
         onRequestClose();
     };
 
@@ -173,7 +178,7 @@ const DoneTaskModal = ({
                 onRequestClose={handleClose}
                 task={task}
                 appAcronym={appAcronym}
-                state="done"
+                state="Done"
             />
         );
     }
