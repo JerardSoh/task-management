@@ -769,8 +769,6 @@ const updateTaskNotes = asyncHandler(async (req, res) => {
     const Task_owner = req.user.username;
     const connection = await db.getConnection();
 
-    console.log(Task_notes);
-
     try {
         await connection.beginTransaction();
 

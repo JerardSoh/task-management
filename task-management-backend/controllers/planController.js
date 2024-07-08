@@ -43,10 +43,8 @@ const getPlans = asyncHandler(async (req, res) => {
 // Create a new plan route: /plan/:App_Acronym/new
 const createPlan = asyncHandler(async (req, res) => {
     const { Plan_MVP_Name, Plan_startDate, Plan_endDate } = req.body;
-    console.log("req.body", req.body);
     const { App_Acronym } = req.params;
     const connection = await db.getConnection();
-    console.log("App_Acronym", App_Acronym);
     try {
         await connection.beginTransaction();
 
