@@ -21,7 +21,7 @@ const UserManagementPage = () => {
         username: "",
         password: "",
         email: "",
-        status: false,
+        status: true,
         groups: [],
     });
     const [allGroups, setAllGroups] = useState([]);
@@ -126,7 +126,7 @@ const UserManagementPage = () => {
                 username: "",
                 password: "",
                 email: "",
-                status: false,
+                status: true,
                 groups: [],
             });
             const users = await getAllUsers();
