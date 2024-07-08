@@ -63,11 +63,6 @@ const ApplicationPage = () => {
                 setIsProjectManager(response.data.success);
             } catch (error) {
                 console.error("Error checking project manager status", error);
-                if (error.request.status === 401) {
-                    navigate("/login");
-                } else if (error.request.status === 403) {
-                    navigate("/");
-                }
             }
         };
 

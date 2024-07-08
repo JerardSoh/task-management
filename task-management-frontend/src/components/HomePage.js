@@ -53,15 +53,11 @@ const HomePage = () => {
                 );
                 setIsProjectLead(response.data.success);
             } catch (error) {
+                setIsProjectLead(false);
                 setMessage({
                     type: "error",
                     text: error.response.data.message || "An error occurred",
                 });
-                if (error.request.status === 401) {
-                    navigate("/login");
-                } else if (error.request.status === 403) {
-                    navigate("/");
-                }
             }
         };
 
