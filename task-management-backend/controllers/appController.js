@@ -139,10 +139,14 @@ const createApp = asyncHandler(async (req, res) => {
     } catch (error) {
         await connection.rollback();
         console.error("Error details:", error);
-        throw new HttpError(
-            "Failed to create app",
-            STATUS_INTERNAL_SERVER_ERROR
-        );
+        if (error instanceof HttpError) {
+            throw error;
+        } else {
+            throw new HttpError(
+                "Failed to create app",
+                STATUS_INTERNAL_SERVER_ERROR
+            );
+        }
     } finally {
         connection.release();
     }
@@ -225,10 +229,14 @@ const editApp = asyncHandler(async (req, res) => {
     } catch (error) {
         await connection.rollback();
         console.error("Error details:", error);
-        throw new HttpError(
-            "Failed to update app",
-            STATUS_INTERNAL_SERVER_ERROR
-        );
+        if (error instanceof HttpError) {
+            throw error;
+        } else {
+            throw new HttpError(
+                "Failed to update app",
+                STATUS_INTERNAL_SERVER_ERROR
+            );
+        }
     } finally {
         connection.release();
     }

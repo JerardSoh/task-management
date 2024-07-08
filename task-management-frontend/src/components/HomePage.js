@@ -122,10 +122,10 @@ const HomePage = () => {
                             <p>
                                 <strong>Name:</strong> {app.App_Acronym}
                             </p>
-                            <p>
+                            <p className="description">
                                 <strong>Desc:</strong> {app.App_Description}
                             </p>
-                            <p>
+                            <p className="duration">
                                 <strong>Duration:</strong>{" "}
                                 {formatDuration(
                                     app.App_startDate,
@@ -136,7 +136,7 @@ const HomePage = () => {
                                 <button
                                     className="edit-button"
                                     onClick={(e) => {
-                                        e.preventDefault(); // Prevent navigation when clicking edit button
+                                        e.preventDefault();
                                         handleEditAppClick(app.App_Acronym);
                                     }}
                                 >

@@ -769,6 +769,8 @@ const updateTaskNotes = asyncHandler(async (req, res) => {
     const Task_owner = req.user.username;
     const connection = await db.getConnection();
 
+    console.log(Task_notes);
+
     try {
         await connection.beginTransaction();
 
@@ -830,10 +832,14 @@ const updateTaskNotes = asyncHandler(async (req, res) => {
     } catch (error) {
         await connection.rollback();
         console.error("Error details:", error);
-        throw new HttpError(
-            "Failed to update task notes",
-            STATUS_INTERNAL_SERVER_ERROR
-        );
+        if (error instanceof HttpError) {
+            throw error;
+        } else {
+            throw new HttpError(
+                "Failed to update task notes",
+                STATUS_INTERNAL_SERVER_ERROR
+            );
+        }
     } finally {
         connection.release();
     }
