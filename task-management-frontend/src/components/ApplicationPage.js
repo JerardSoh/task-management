@@ -23,6 +23,13 @@ const ApplicationPage = () => {
     const [isDoingTaskModalOpen, setIsDoingTaskModalOpen] = useState(false);
     const [isDoneTaskModalOpen, setIsDoneTaskModalOpen] = useState(false);
     const [isClosedTaskModalOpen, setIsClosedTaskModalOpen] = useState(false);
+    const [permissions, setPermissions] = useState({
+        canEditCreate: false,
+        canEditOpen: false,
+        canEditTodo: false,
+        canEditDoing: false,
+        canEditDone: false,
+    });
 
     useEffect(() => {
         const fetchTasks = async () => {
@@ -67,6 +74,57 @@ const ApplicationPage = () => {
         checkProjectManagerStatus();
     }, [navigate]);
 
+    useEffect(() => {
+        const fetchAppDetails = async () => {
+            try {
+                const response = await axios.get(
+                    `${process.env.REACT_APP_API_URL}/app/${appAcronym}`,
+                    {
+                        withCredentials: true,
+                    }
+                );
+                const app = response.data.app;
+
+                const checkPermission = async (group) => {
+                    try {
+                        const res = await axios.get(
+                            `${process.env.REACT_APP_API_URL}/check-group/${group}`,
+                            {
+                                withCredentials: true,
+                            }
+                        );
+                        return res.data.success;
+                    } catch (err) {
+                        return false;
+                    }
+                };
+                const canEditCreate = await checkPermission(
+                    app.App_permit_Create
+                );
+                const canEditOpen = await checkPermission(app.App_permit_Open);
+                const canEditTodo = await checkPermission(
+                    app.App_permit_toDoList
+                );
+                const canEditDoing = await checkPermission(
+                    app.App_permit_Doing
+                );
+                const canEditDone = await checkPermission(app.App_permit_Done);
+
+                setPermissions({
+                    canEditCreate,
+                    canEditOpen,
+                    canEditTodo,
+                    canEditDoing,
+                    canEditDone,
+                });
+            } catch (error) {
+                console.error("Error fetching app details", error);
+            }
+        };
+
+        fetchAppDetails();
+    }, [appAcronym]);
+
     const columns = [
         { id: "open", title: "Open" },
         { id: "todo", title: "To-Do" },
@@ -84,9 +142,11 @@ const ApplicationPage = () => {
                 <h1>{appAcronym}</h1>
                 <p>It is an application about {appAcronym}.</p>
                 <div className="header-buttons">
-                    <button onClick={() => setIsCreateTaskModalOpen(true)}>
-                        Create Task
-                    </button>
+                    {permissions.canEditCreate && (
+                        <button onClick={() => setIsCreateTaskModalOpen(true)}>
+                            Create Task
+                        </button>
+                    )}
                     {isProjectManager && (
                         <button onClick={() => setIsPlansModalOpen(true)}>
                             Plans
@@ -103,20 +163,16 @@ const ApplicationPage = () => {
                                 key={task.Task_id}
                                 className="task-card"
                                 onClick={() => {
+                                    setSelectedTask(task);
                                     if (task.Task_state === "open") {
-                                        setSelectedTask(task);
                                         setIsOpenTaskModalOpen(true);
                                     } else if (task.Task_state === "todo") {
-                                        setSelectedTask(task);
                                         setIsTodoTaskModalOpen(true);
                                     } else if (task.Task_state === "doing") {
-                                        setSelectedTask(task);
                                         setIsDoingTaskModalOpen(true);
                                     } else if (task.Task_state === "done") {
-                                        setSelectedTask(task);
                                         setIsDoneTaskModalOpen(true);
                                     } else if (task.Task_state === "closed") {
-                                        setSelectedTask(task);
                                         setIsClosedTaskModalOpen(true);
                                     }
                                 }}
@@ -157,11 +213,14 @@ const ApplicationPage = () => {
                     appAcronym={appAcronym}
                 />
             )}
-            <CreateTaskModal
-                isOpen={isCreateTaskModalOpen}
-                onRequestClose={() => setIsCreateTaskModalOpen(false)}
-                appAcronym={appAcronym}
-            />
+            {permissions.canEditCreate && (
+                <CreateTaskModal
+                    isOpen={isCreateTaskModalOpen}
+                    onRequestClose={() => setIsCreateTaskModalOpen(false)}
+                    appAcronym={appAcronym}
+                />
+            )}
+
             {selectedTask && (
                 <>
                     <OpenTaskModal
@@ -169,24 +228,28 @@ const ApplicationPage = () => {
                         onRequestClose={() => setIsOpenTaskModalOpen(false)}
                         task={selectedTask}
                         appAcronym={appAcronym}
+                        canEdit={permissions.canEditOpen}
                     />
                     <TodoTaskModal
                         isOpen={isTodoTaskModalOpen}
                         onRequestClose={() => setIsTodoTaskModalOpen(false)}
                         task={selectedTask}
                         appAcronym={appAcronym}
+                        canEdit={permissions.canEditTodo}
                     />
                     <DoingTaskModal
                         isOpen={isDoingTaskModalOpen}
                         onRequestClose={() => setIsDoingTaskModalOpen(false)}
                         task={selectedTask}
                         appAcronym={appAcronym}
+                        canEdit={permissions.canEditDoing}
                     />
                     <DoneTaskModal
                         isOpen={isDoneTaskModalOpen}
                         onRequestClose={() => setIsDoneTaskModalOpen(false)}
                         task={selectedTask}
                         appAcronym={appAcronym}
+                        canEdit={permissions.canEditDone}
                     />
                     <ClosedTaskModal
                         isOpen={isClosedTaskModalOpen}

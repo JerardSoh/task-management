@@ -1,11 +1,18 @@
 import React, { useState, useEffect } from "react";
 import Modal from "react-modal";
 import axios from "axios";
+import ReadOnlyTask from "./ReadOnlyTask";
 import "../styles/OpenTaskModal.css"; // Use the same CSS as OpenTaskModal
 
 Modal.setAppElement("#root");
 
-const TodoTaskModal = ({ isOpen, onRequestClose, task, appAcronym }) => {
+const TodoTaskModal = ({
+    isOpen,
+    onRequestClose,
+    task,
+    appAcronym,
+    canEdit,
+}) => {
     const [form, setForm] = useState({
         Task_plan: task.Task_plan || "",
         Task_notes: task.Task_notes || "",
@@ -98,6 +105,18 @@ const TodoTaskModal = ({ isOpen, onRequestClose, task, appAcronym }) => {
         setNewNote("");
         onRequestClose();
     };
+
+    if (!canEdit) {
+        return (
+            <ReadOnlyTask
+                isOpen={isOpen}
+                onRequestClose={handleClose}
+                task={task}
+                appAcronym={appAcronym}
+                state="todo"
+            />
+        );
+    }
 
     return (
         <Modal

@@ -7,6 +7,7 @@ const {
     isAdmin,
     isProjectLead,
     isProjectManager,
+    isInGroup,
 } = require("../controllers/authController");
 const { authenticateToken, requireGroup } = require("../middleware/auth");
 
@@ -27,5 +28,8 @@ router.get("/projectlead", authenticateToken, isProjectLead);
 
 // Route for checking project manager status (requires authentication)
 router.get("/projectmanager", authenticateToken, isProjectManager);
+
+// Route for checking user in group (requires authentication)
+router.get("/check-group/:group", authenticateToken, isInGroup);
 
 module.exports = router;

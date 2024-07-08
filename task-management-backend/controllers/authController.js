@@ -8,6 +8,7 @@ const { checkGroup } = require("../middleware/auth");
 // Constants for HTTP status codes
 const STATUS_OK = 200;
 const STATUS_UNAUTHORIZED = 401;
+const STATUS_FORBIDDEN = 403;
 
 // Login route: /login
 const login = asyncHandler(async (req, res) => {
@@ -121,6 +122,28 @@ const isProjectManager = asyncHandler(async (req, res) => {
     });
 });
 
+// isInGroup route: /check-group/:group
+const isInGroup = asyncHandler(async (req, res) => {
+    const username = req.user.username;
+    const group = req.params.group;
+
+    if (!username) {
+        throw new HttpError("User information is missing", STATUS_FORBIDDEN);
+    }
+
+    const isInGroup = await checkGroup(username, group);
+    if (!isInGroup) {
+        throw new HttpError(
+            "You do not have permission to access this resource",
+            STATUS_FORBIDDEN
+        );
+    }
+    res.status(STATUS_OK).json({
+        success: true,
+        message: `User is in the ${group} group`,
+    });
+});
+
 module.exports = {
     login,
     logout,
@@ -128,4 +151,5 @@ module.exports = {
     isAdmin,
     isProjectLead,
     isProjectManager,
+    isInGroup,
 };
