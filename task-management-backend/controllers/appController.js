@@ -156,6 +156,7 @@ const createApp = asyncHandler(async (req, res) => {
         res.status(STATUS_CREATED).json({
             success: true,
             message: "App created successfully",
+        
         });
     } catch (error) {
         await connection.rollback();

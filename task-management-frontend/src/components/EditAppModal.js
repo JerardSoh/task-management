@@ -5,12 +5,12 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import axios from "axios";
 import { format, isValid, isBefore } from "date-fns";
-import "../styles/CreateAppModal.css"; // Using the same CSS file
+import "../styles/CreateAppModal.css";
 import { useNavigate } from "react-router-dom";
 
 Modal.setAppElement("#root");
 
-const EditAppModal = ({ isOpen, onRequestClose, appAcronym }) => {
+const EditAppModal = ({ isOpen, onRequestClose, appAcronym, fetchApps }) => {
     const initialFormState = {
         App_Acronym: "",
         App_Description: "",
@@ -126,7 +126,10 @@ const EditAppModal = ({ isOpen, onRequestClose, appAcronym }) => {
             !isValid(App_startDate) ||
             !isValid(App_endDate)
         ) {
-            setMessage({ type: "error", text: "Invalid date format." });
+            setMessage({
+                type: "error",
+                text: "Date is empty or invalid date format.",
+            });
             return;
         }
 
@@ -156,6 +159,11 @@ const EditAppModal = ({ isOpen, onRequestClose, appAcronym }) => {
                     withCredentials: true,
                 }
             );
+            setMessage({
+                type: "",
+                text: "",
+            });
+            fetchApps();
             onRequestClose();
         } catch (error) {
             setMessage({

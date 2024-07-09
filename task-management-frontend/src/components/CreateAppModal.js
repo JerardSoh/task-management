@@ -10,7 +10,7 @@ import { useNavigate } from "react-router-dom";
 
 Modal.setAppElement("#root");
 
-const CreateAppModal = ({ isOpen, onRequestClose }) => {
+const CreateAppModal = ({ isOpen, onRequestClose, fetchApps }) => {
     const initialFormState = {
         App_Acronym: "",
         App_Description: "",
@@ -90,7 +90,10 @@ const CreateAppModal = ({ isOpen, onRequestClose }) => {
             !isValid(App_startDate) ||
             !isValid(App_endDate)
         ) {
-            setMessage({ type: "error", text: "Invalid date format." });
+            setMessage({
+                type: "error",
+                text: "Date is empty or invalid date format.",
+            });
             return;
         }
 
@@ -109,7 +112,7 @@ const CreateAppModal = ({ isOpen, onRequestClose }) => {
         };
 
         try {
-            const response = await axios.post(
+            await axios.post(
                 `${process.env.REACT_APP_API_URL}/app/new`,
                 formattedForm,
                 {
@@ -120,7 +123,9 @@ const CreateAppModal = ({ isOpen, onRequestClose }) => {
                 type: "success",
                 text: "App created successfully",
             });
+            fetchApps();
             setForm(initialFormState);
+            onRequestClose();
         } catch (error) {
             setMessage({
                 type: "error",

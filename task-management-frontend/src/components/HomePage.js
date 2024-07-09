@@ -15,29 +15,29 @@ const HomePage = () => {
     const [message, setMessage] = useState({ type: "", text: "" });
     const navigate = useNavigate();
 
-    useEffect(() => {
-        const fetchApps = async () => {
-            try {
-                const response = await axios.get(
-                    `${process.env.REACT_APP_API_URL}/app/all`,
-                    {
-                        withCredentials: true,
-                    }
-                );
-                setApps(response.data.apps);
-            } catch (error) {
-                setMessage({
-                    type: "error",
-                    text: error.response.data.message || "An error occurred",
-                });
-                if (error.request.status === 401) {
-                    navigate("/login");
-                } else if (error.request.status === 403) {
-                    navigate("/");
+    const fetchApps = async () => {
+        try {
+            const response = await axios.get(
+                `${process.env.REACT_APP_API_URL}/app/all`,
+                {
+                    withCredentials: true,
                 }
+            );
+            setApps(response.data.apps);
+        } catch (error) {
+            setMessage({
+                type: "error",
+                text: error.response.data.message || "An error occurred",
+            });
+            if (error.request.status === 401) {
+                navigate("/login");
+            } else if (error.request.status === 403) {
+                navigate("/");
             }
-        };
+        }
+    };
 
+    useEffect(() => {
         fetchApps();
     }, [navigate]);
 
@@ -146,11 +146,13 @@ const HomePage = () => {
             <CreateAppModal
                 isOpen={isCreateModalOpen}
                 onRequestClose={handleCloseCreateModal}
+                fetchApps={fetchApps}
             />
             <EditAppModal
                 isOpen={isEditModalOpen}
                 onRequestClose={handleCloseEditModal}
                 appAcronym={selectedAppAcronym}
+                fetchApps={fetchApps}
             />
         </div>
     );

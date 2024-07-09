@@ -218,8 +218,8 @@ const UserManagementPage = () => {
                         <th>Username</th>
                         <th>Password</th>
                         <th>Email</th>
-                        <th>Enabled</th>
-                        <th>Groups</th>
+                        <th className="enabled-column">Enabled</th>
+                        <th className="group-column">Groups</th>
                         <th>Action</th>
                     </tr>
                 </thead>

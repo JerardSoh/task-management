@@ -12,17 +12,41 @@ const OpenTaskModal = ({
     onRequestClose,
     task,
     appAcronym,
-    canEdit,
+    fetchTasks,
 }) => {
     const [form, setForm] = useState({
         Task_plan: task.Task_plan || "",
         Task_notes: task.Task_notes || "",
     });
 
-    const [initialPlan, setInitialPlan] = useState(task.Task_plan || "");
     const [plans, setPlans] = useState([]);
     const [message, setMessage] = useState({ type: "", text: "" });
     const [newNote, setNewNote] = useState("");
+    const [canEdit, setCanEdit] = useState(false);
+
+    // Check permission
+    useEffect(() => {
+        if (isOpen) {
+            const checkPermission = async () => {
+                try {
+                    const response = await axios.get(
+                        `${process.env.REACT_APP_API_URL}/app/${appAcronym}`,
+                        { withCredentials: true }
+                    );
+                    const app = response.data.app;
+                    const res = await axios.get(
+                        `${process.env.REACT_APP_API_URL}/check-group/${app.App_permit_Open}`,
+                        { withCredentials: true }
+                    );
+                    setCanEdit(res.data.success);
+                } catch (err) {
+                    setCanEdit(false);
+                }
+            };
+
+            checkPermission();
+        }
+    }, [isOpen, appAcronym]);
 
     useEffect(() => {
         // Update form state when task prop changes
@@ -31,7 +55,6 @@ const OpenTaskModal = ({
                 Task_plan: task.Task_plan || "",
                 Task_notes: task.Task_notes || "",
             });
-            setInitialPlan(task.Task_plan || ""); // Store the initial plan
         }
     }, [task]);
 
@@ -71,6 +94,7 @@ const OpenTaskModal = ({
             );
             setForm({
                 Task_notes: response.data.task.Task_notes || "",
+                Task_plan: response.data.task.Task_plan || "",
             });
         } catch (error) {
             setMessage({
@@ -104,6 +128,8 @@ const OpenTaskModal = ({
                 type: "success",
                 text: "Plan updated successfully",
             });
+            fetchTasks(); // Fetch updated tasks
+            fetchTaskDetails(); // Fetch updated task details
         } catch (error) {
             setMessage({
                 type: "error",
@@ -124,9 +150,14 @@ const OpenTaskModal = ({
                 }
             );
             setMessage({
-                type: "success",
-                text: "Task released successfully",
+                type: "",
+                text: "",
             });
+            setForm((prevForm) => ({
+                ...prevForm,
+                Task_plan: "", // Reset Task_plan to initial value
+            }));
+            fetchTasks(); // Fetch updated tasks
             onRequestClose();
         } catch (error) {
             setMessage({
@@ -164,7 +195,7 @@ const OpenTaskModal = ({
         setNewNote("");
         setForm((prevForm) => ({
             ...prevForm,
-            Task_plan: initialPlan, // Reset Task_plan to initial value
+            Task_plan: "", // Reset Task_plan to initial value
         }));
         onRequestClose();
     };

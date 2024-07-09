@@ -46,6 +46,7 @@ const getPlans = asyncHandler(async (req, res) => {
 const createPlan = asyncHandler(async (req, res) => {
     const { Plan_MVP_Name, Plan_startDate, Plan_endDate } = req.body;
     const { App_Acronym } = req.params;
+    console.log(req.body);
     const connection = await db.getConnection();
     try {
         await connection.beginTransaction();
@@ -84,7 +85,7 @@ const createPlan = asyncHandler(async (req, res) => {
         }
         if (!validateDate(Plan_startDate) || !validateDate(Plan_endDate)) {
             throw new HttpError(
-                "Plan date is empty or invalid date format",
+                "Date is empty or invalid date format",
                 STATUS_BAD_REQUEST
             );
         }

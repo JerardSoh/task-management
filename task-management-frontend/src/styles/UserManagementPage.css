@@ -1,3 +1,5 @@
+/* UserManagementPage.css */
+
 .user-management-container {
     max-width: 1000px;
     margin: 40px auto;
@@ -128,4 +130,13 @@
 /* React-select dropdown menu styling */
 .user-table .react-select__menu {
     z-index: 9999; /* Ensure dropdown appears above other elements */
+}
+
+/* Set width of the "Enabled" column */
+.user-table .enabled-column {
+    width: 60px; /* Adjust the width as needed */
+}
+
+.user-table .group-column {
+    width: 190px; /* Adjust the width as needed */
 }

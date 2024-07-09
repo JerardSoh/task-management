@@ -6,7 +6,12 @@ import "../styles/CreateTaskModal.css";
 
 Modal.setAppElement("#root");
 
-const CreateTaskModal = ({ isOpen, onRequestClose, appAcronym }) => {
+const CreateTaskModal = ({
+    isOpen,
+    onRequestClose,
+    appAcronym,
+    fetchTasks,
+}) => {
     const initialFormState = {
         Task_Name: "",
         Task_description: "",
@@ -74,6 +79,9 @@ const CreateTaskModal = ({ isOpen, onRequestClose, appAcronym }) => {
                 text: "Task created successfully",
             });
             setForm(initialFormState);
+            setMessage({ type: "", text: "" });
+            fetchTasks();
+            onRequestClose();
         } catch (error) {
             setMessage({
                 type: "error",

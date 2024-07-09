@@ -11,7 +11,7 @@ const DoingTaskModal = ({
     onRequestClose,
     task,
     appAcronym,
-    canEdit,
+    fetchTasks,
 }) => {
     const [form, setForm] = useState({
         Task_plan: task.Task_plan || "",
@@ -20,6 +20,31 @@ const DoingTaskModal = ({
 
     const [message, setMessage] = useState({ type: "", text: "" });
     const [newNote, setNewNote] = useState("");
+    const [canEdit, setCanEdit] = useState(false);
+
+    // Check permission
+    useEffect(() => {
+        if (isOpen) {
+            const checkPermission = async () => {
+                try {
+                    const response = await axios.get(
+                        `${process.env.REACT_APP_API_URL}/app/${appAcronym}`,
+                        { withCredentials: true }
+                    );
+                    const app = response.data.app;
+                    const res = await axios.get(
+                        `${process.env.REACT_APP_API_URL}/check-group/${app.App_permit_Doing}`,
+                        { withCredentials: true }
+                    );
+                    setCanEdit(res.data.success);
+                } catch (err) {
+                    setCanEdit(false);
+                }
+            };
+
+            checkPermission();
+        }
+    }, [isOpen, appAcronym]);
 
     useEffect(() => {
         // Update form state when task prop changes
@@ -65,9 +90,10 @@ const DoingTaskModal = ({
                 }
             );
             setMessage({
-                type: "success",
-                text: "Task marked as complete",
+                type: "",
+                text: "",
             });
+            fetchTasks();
             onRequestClose();
         } catch (error) {
             setMessage({
@@ -87,9 +113,10 @@ const DoingTaskModal = ({
                 }
             );
             setMessage({
-                type: "success",
-                text: "Task halted successfully",
+                type: "",
+                text: "",
             });
+            fetchTasks();
             onRequestClose();
         } catch (error) {
             setMessage({

@@ -23,31 +23,47 @@ const ApplicationPage = () => {
     const [isDoingTaskModalOpen, setIsDoingTaskModalOpen] = useState(false);
     const [isDoneTaskModalOpen, setIsDoneTaskModalOpen] = useState(false);
     const [isClosedTaskModalOpen, setIsClosedTaskModalOpen] = useState(false);
-    const [permissions, setPermissions] = useState({
-        canEditCreate: false,
-        canEditOpen: false,
-        canEditTodo: false,
-        canEditDoing: false,
-        canEditDone: false,
-    });
+    const [canEditCreate, setCanEditCreate] = useState(false);
+
+    const fetchTasks = async () => {
+        try {
+            const response = await axios.get(
+                `${process.env.REACT_APP_API_URL}/task/${appAcronym}/all`,
+                {
+                    withCredentials: true,
+                }
+            );
+            setTasks(response.data.tasks);
+        } catch (error) {
+            console.error("Error fetching tasks", error);
+        }
+    };
 
     useEffect(() => {
-        const fetchTasks = async () => {
+        fetchTasks();
+    }, []);
+
+    // Check permission for create task
+    useEffect(() => {
+        const checkPermission = async () => {
             try {
                 const response = await axios.get(
-                    `${process.env.REACT_APP_API_URL}/task/${appAcronym}/all`,
-                    {
-                        withCredentials: true,
-                    }
+                    `${process.env.REACT_APP_API_URL}/app/${appAcronym}`,
+                    { withCredentials: true }
                 );
-                setTasks(response.data.tasks);
-            } catch (error) {
-                console.error("Error fetching tasks", error);
+                const app = response.data.app;
+                const res = await axios.get(
+                    `${process.env.REACT_APP_API_URL}/check-group/${app.App_permit_Create}`,
+                    { withCredentials: true }
+                );
+                setCanEditCreate(res.data.success);
+            } catch (err) {
+                setCanEditCreate(false);
             }
         };
 
-        fetchTasks();
-    }, [appAcronym]);
+        checkPermission();
+    }, []);
 
     // Check if user is a project manager
     useEffect(() => {
@@ -69,57 +85,6 @@ const ApplicationPage = () => {
         checkProjectManagerStatus();
     }, [navigate]);
 
-    useEffect(() => {
-        const fetchAppDetails = async () => {
-            try {
-                const response = await axios.get(
-                    `${process.env.REACT_APP_API_URL}/app/${appAcronym}`,
-                    {
-                        withCredentials: true,
-                    }
-                );
-                const app = response.data.app;
-
-                const checkPermission = async (group) => {
-                    try {
-                        const res = await axios.get(
-                            `${process.env.REACT_APP_API_URL}/check-group/${group}`,
-                            {
-                                withCredentials: true,
-                            }
-                        );
-                        return res.data.success;
-                    } catch (err) {
-                        return false;
-                    }
-                };
-                const canEditCreate = await checkPermission(
-                    app.App_permit_Create
-                );
-                const canEditOpen = await checkPermission(app.App_permit_Open);
-                const canEditTodo = await checkPermission(
-                    app.App_permit_toDoList
-                );
-                const canEditDoing = await checkPermission(
-                    app.App_permit_Doing
-                );
-                const canEditDone = await checkPermission(app.App_permit_Done);
-
-                setPermissions({
-                    canEditCreate,
-                    canEditOpen,
-                    canEditTodo,
-                    canEditDoing,
-                    canEditDone,
-                });
-            } catch (error) {
-                console.error("Error fetching app details", error);
-            }
-        };
-
-        fetchAppDetails();
-    }, [appAcronym]);
-
     const columns = [
         { id: "open", title: "Open" },
         { id: "todo", title: "To-Do" },
@@ -137,7 +102,7 @@ const ApplicationPage = () => {
                 <h1>{appAcronym}</h1>
                 <p>It is an application about {appAcronym}.</p>
                 <div className="header-buttons">
-                    {permissions.canEditCreate && (
+                    {canEditCreate && (
                         <button onClick={() => setIsCreateTaskModalOpen(true)}>
                             Create Task
                         </button>
@@ -208,11 +173,12 @@ const ApplicationPage = () => {
                     appAcronym={appAcronym}
                 />
             )}
-            {permissions.canEditCreate && (
+            {canEditCreate && (
                 <CreateTaskModal
                     isOpen={isCreateTaskModalOpen}
                     onRequestClose={() => setIsCreateTaskModalOpen(false)}
                     appAcronym={appAcronym}
+                    fetchTasks={fetchTasks}
                 />
             )}
 
@@ -223,28 +189,28 @@ const ApplicationPage = () => {
                         onRequestClose={() => setIsOpenTaskModalOpen(false)}
                         task={selectedTask}
                         appAcronym={appAcronym}
-                        canEdit={permissions.canEditOpen}
+                        fetchTasks={fetchTasks}
                     />
                     <TodoTaskModal
                         isOpen={isTodoTaskModalOpen}
                         onRequestClose={() => setIsTodoTaskModalOpen(false)}
                         task={selectedTask}
                         appAcronym={appAcronym}
-                        canEdit={permissions.canEditTodo}
+                        fetchTasks={fetchTasks}
                     />
                     <DoingTaskModal
                         isOpen={isDoingTaskModalOpen}
                         onRequestClose={() => setIsDoingTaskModalOpen(false)}
                         task={selectedTask}
                         appAcronym={appAcronym}
-                        canEdit={permissions.canEditDoing}
+                        fetchTasks={fetchTasks}
                     />
                     <DoneTaskModal
                         isOpen={isDoneTaskModalOpen}
                         onRequestClose={() => setIsDoneTaskModalOpen(false)}
                         task={selectedTask}
                         appAcronym={appAcronym}
-                        canEdit={permissions.canEditDone}
+                        fetchTasks={fetchTasks}
                     />
                     <ClosedTaskModal
                         isOpen={isClosedTaskModalOpen}

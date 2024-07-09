@@ -64,7 +64,10 @@ const PlansModal = ({ isOpen, onRequestClose, appAcronym }) => {
             !isValid(Plan_startDate) ||
             !isValid(Plan_endDate)
         ) {
-            setMessage({ type: "error", text: "Invalid date format." });
+            setMessage({
+                type: "error",
+                text: "Date is empty or invalid date format.",
+            });
             return;
         }
 

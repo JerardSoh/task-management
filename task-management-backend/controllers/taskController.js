@@ -10,6 +10,7 @@ const STATUS_CREATED = 201;
 const STATUS_BAD_REQUEST = 400;
 const STATUS_INTERNAL_SERVER_ERROR = 500;
 const STATUS_NOT_FOUND = 404;
+const STATUS_FORBIDDEN = 403;
 
 // Validate date
 const validateDate = (date) => {
@@ -301,6 +302,8 @@ const saveTaskPlan = asyncHandler(async (req, res) => {
         if (task[0].Task_plan !== Task_plan) {
             if (Task_plan) {
                 addTask_notes += `[${unformattedTask_createDate}, '${task[0].Task_state}'] ${req.user.username} saved Task plan to ${Task_plan}.\n ##########################################################\n`;
+            } else {
+                addTask_notes += `[${unformattedTask_createDate}, '${task[0].Task_state}'] ${req.user.username} removed Task plan.\n ##########################################################\n`;
             }
             // Update Task_notes
             await connection.execute(
@@ -324,10 +327,14 @@ const saveTaskPlan = asyncHandler(async (req, res) => {
     } catch (error) {
         await connection.rollback();
         console.error("Error details:", error);
-        throw new HttpError(
-            "Failed to save task plan",
-            STATUS_INTERNAL_SERVER_ERROR
-        );
+        if (error instanceof HttpError) {
+            throw error;
+        } else {
+            throw new HttpError(
+                "Failed to save task plan",
+                STATUS_INTERNAL_SERVER_ERROR
+            );
+        }
     } finally {
         connection.release();
     }
@@ -636,6 +643,8 @@ const moveBackDoneTask = asyncHandler(async (req, res) => {
         if (task[0].Task_plan !== Task_plan) {
             if (Task_plan) {
                 addTask_notes += `[${unformattedTask_createDate}, '${task[0].Task_state}'] ${req.user.username} has updated the Task plan to ${Task_plan}.\n ##########################################################\n`;
+            } else if (task[0].Task_plan) {
+                addTask_notes += `[${unformattedTask_createDate}, '${task[0].Task_state}'] ${req.user.username} removed the Task plan.\n ##########################################################\n`;
             }
             await connection.execute(
                 "UPDATE Task SET Task_plan = ? WHERE Task_id = ?",
