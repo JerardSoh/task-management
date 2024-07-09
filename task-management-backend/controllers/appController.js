@@ -2,6 +2,7 @@ const db = require("../db");
 const HttpError = require("../utils/httpError");
 const asyncHandler = require("../utils/asyncHandler");
 const { parseISO, isBefore } = require("date-fns");
+const { checkGroup } = require("../middleware/auth");
 
 // Constants for HTTP status codes
 const STATUS_OK = 200;
@@ -9,6 +10,7 @@ const STATUS_CREATED = 201;
 const STATUS_BAD_REQUEST = 400;
 const STATUS_INTERNAL_SERVER_ERROR = 500;
 const STATUS_NOT_FOUND = 404;
+const STATUS_FORBIDDEN = 403;
 
 // Validate date
 const validateDate = (date) => {
@@ -67,7 +69,7 @@ const createApp = asyncHandler(async (req, res) => {
         const isInGroup = await checkGroup(username, "projectlead");
         if (!isInGroup) {
             throw new HttpError(
-                "You do not have permission to access this resource",
+                "You do not have permission to create application",
                 STATUS_FORBIDDEN
             );
         }
@@ -116,7 +118,10 @@ const createApp = asyncHandler(async (req, res) => {
             throw new HttpError("Missing App end date", STATUS_BAD_REQUEST);
         }
         if (!validateDate(App_startDate) || !validateDate(App_endDate)) {
-            throw new HttpError("Invalid date format", STATUS_BAD_REQUEST);
+            throw new HttpError(
+                "Date is empty or invalid date format",
+                STATUS_BAD_REQUEST
+            );
         }
 
         const startDate = parseISO(App_startDate);
@@ -181,12 +186,11 @@ const editApp = asyncHandler(async (req, res) => {
     } = req.body;
     const { App_Acronym } = req.params;
 
-    
     const connection = await db.getConnection();
-    
+
     try {
         await connection.beginTransaction();
-        
+
         // Check if user is in the projectlead group
         const username = req.user.username;
         if (!username) {
@@ -198,7 +202,7 @@ const editApp = asyncHandler(async (req, res) => {
         const isInGroup = await checkGroup(username, "projectlead");
         if (!isInGroup) {
             throw new HttpError(
-                "You do not have permission to access this resource",
+                "You do not have permission to edit application details",
                 STATUS_FORBIDDEN
             );
         }
@@ -207,7 +211,7 @@ const editApp = asyncHandler(async (req, res) => {
         if (!App_Acronym) {
             throw new HttpError("Missing App acronym", STATUS_BAD_REQUEST);
         }
-    
+
         // Validate dates
         if (!App_startDate) {
             throw new HttpError("Missing App start date", STATUS_BAD_REQUEST);
@@ -216,12 +220,15 @@ const editApp = asyncHandler(async (req, res) => {
             throw new HttpError("Missing App end date", STATUS_BAD_REQUEST);
         }
         if (!validateDate(App_startDate) || !validateDate(App_endDate)) {
-            throw new HttpError("Invalid date format", STATUS_BAD_REQUEST);
+            throw new HttpError(
+                "Date is empty or invalid date format",
+                STATUS_BAD_REQUEST
+            );
         }
-    
+
         const startDate = parseISO(App_startDate);
         const endDate = parseISO(App_endDate);
-    
+
         if (isBefore(endDate, startDate)) {
             throw new HttpError(
                 "End date cannot be before start date",

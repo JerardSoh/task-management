@@ -2,6 +2,7 @@ const db = require("../db");
 const HttpError = require("../utils/httpError");
 const asyncHandler = require("../utils/asyncHandler");
 const { parseISO, isBefore } = require("date-fns");
+const { checkGroup } = require("../middleware/auth");
 
 // Constants for HTTP status codes
 const STATUS_OK = 200;
@@ -9,6 +10,7 @@ const STATUS_CREATED = 201;
 const STATUS_BAD_REQUEST = 400;
 const STATUS_INTERNAL_SERVER_ERROR = 500;
 const STATUS_NOT_FOUND = 404;
+const STATUS_FORBIDDEN = 403;
 
 // Validate date
 const validateDate = (date) => {
@@ -59,7 +61,7 @@ const createPlan = asyncHandler(async (req, res) => {
         const isInGroup = await checkGroup(username, "projectmanager");
         if (!isInGroup) {
             throw new HttpError(
-                "You do not have permission to access this resource",
+                "You do not have permission to create plan",
                 STATUS_FORBIDDEN
             );
         }
@@ -81,7 +83,10 @@ const createPlan = asyncHandler(async (req, res) => {
             throw new HttpError("Missing Plan end date", STATUS_BAD_REQUEST);
         }
         if (!validateDate(Plan_startDate) || !validateDate(Plan_endDate)) {
-            throw new HttpError("Invalid date format", STATUS_BAD_REQUEST);
+            throw new HttpError(
+                "Plan date is empty or invalid date format",
+                STATUS_BAD_REQUEST
+            );
         }
 
         const startDate = parseISO(Plan_startDate);
