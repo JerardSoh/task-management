@@ -11,8 +11,8 @@ const { requireGroup } = require("../middleware/auth");
 router.get("/:App_Acronym/all", getPlans);
 
 // Create a new plan
-//router.post("/new", requireGroup("projectlead"), plan);
-router.post("/:App_Acronym/new", createPlan);
+router.post("/new", createPlan);
+//router.post("/:App_Acronym/new", createPlan);
 
 // Get plan details
 router.get("/:App_Acronym/:Plan_MVP_Name", getPlanDetails);

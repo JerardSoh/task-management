@@ -56,6 +56,22 @@ const createApp = asyncHandler(async (req, res) => {
 
     try {
         await connection.beginTransaction();
+        // Check if user is in the projectlead group
+        const username = req.user.username;
+        if (!username) {
+            throw new HttpError(
+                "User information is missing",
+                STATUS_FORBIDDEN
+            );
+        }
+        const isInGroup = await checkGroup(username, "projectlead");
+        if (!isInGroup) {
+            throw new HttpError(
+                "You do not have permission to access this resource",
+                STATUS_FORBIDDEN
+            );
+        }
+
         // Validate App_Acronym (Only alphanumeric characters and underscores are allowed)
         if (!App_Acronym) {
             throw new HttpError("Missing App name", STATUS_BAD_REQUEST);
@@ -165,36 +181,53 @@ const editApp = asyncHandler(async (req, res) => {
     } = req.body;
     const { App_Acronym } = req.params;
 
-    // Validate App_Acronym
-    if (!App_Acronym) {
-        throw new HttpError("Missing App acronym", STATUS_BAD_REQUEST);
-    }
-
-    // Validate dates
-    if (!App_startDate) {
-        throw new HttpError("Missing App start date", STATUS_BAD_REQUEST);
-    }
-    if (!App_endDate) {
-        throw new HttpError("Missing App end date", STATUS_BAD_REQUEST);
-    }
-    if (!validateDate(App_startDate) || !validateDate(App_endDate)) {
-        throw new HttpError("Invalid date format", STATUS_BAD_REQUEST);
-    }
-
-    const startDate = parseISO(App_startDate);
-    const endDate = parseISO(App_endDate);
-
-    if (isBefore(endDate, startDate)) {
-        throw new HttpError(
-            "End date cannot be before start date",
-            STATUS_BAD_REQUEST
-        );
-    }
-
+    
     const connection = await db.getConnection();
-
+    
     try {
         await connection.beginTransaction();
+        
+        // Check if user is in the projectlead group
+        const username = req.user.username;
+        if (!username) {
+            throw new HttpError(
+                "User information is missing",
+                STATUS_FORBIDDEN
+            );
+        }
+        const isInGroup = await checkGroup(username, "projectlead");
+        if (!isInGroup) {
+            throw new HttpError(
+                "You do not have permission to access this resource",
+                STATUS_FORBIDDEN
+            );
+        }
+
+        // Validate App_Acronym
+        if (!App_Acronym) {
+            throw new HttpError("Missing App acronym", STATUS_BAD_REQUEST);
+        }
+    
+        // Validate dates
+        if (!App_startDate) {
+            throw new HttpError("Missing App start date", STATUS_BAD_REQUEST);
+        }
+        if (!App_endDate) {
+            throw new HttpError("Missing App end date", STATUS_BAD_REQUEST);
+        }
+        if (!validateDate(App_startDate) || !validateDate(App_endDate)) {
+            throw new HttpError("Invalid date format", STATUS_BAD_REQUEST);
+        }
+    
+        const startDate = parseISO(App_startDate);
+        const endDate = parseISO(App_endDate);
+    
+        if (isBefore(endDate, startDate)) {
+            throw new HttpError(
+                "End date cannot be before start date",
+                STATUS_BAD_REQUEST
+            );
+        }
 
         // Check if the app exists
         const [existingApp] = await db.query(

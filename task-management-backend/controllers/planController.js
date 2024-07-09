@@ -48,6 +48,22 @@ const createPlan = asyncHandler(async (req, res) => {
     try {
         await connection.beginTransaction();
 
+        // Check if user is in the projectlead group
+        const username = req.user.username;
+        if (!username) {
+            throw new HttpError(
+                "User information is missing",
+                STATUS_FORBIDDEN
+            );
+        }
+        const isInGroup = await checkGroup(username, "projectmanager");
+        if (!isInGroup) {
+            throw new HttpError(
+                "You do not have permission to access this resource",
+                STATUS_FORBIDDEN
+            );
+        }
+
         // Check duplicate App_Acronym and Plan_MVP_Name
         const [existingPlan] = await db.query(
             "SELECT * FROM Plan WHERE Plan_app_Acronym = ? AND Plan_MVP_Name = ?",

@@ -14,67 +14,39 @@ const {
     updateTaskNotes,
 } = require("../controllers/taskController");
 
-const { authenticateToken } = require("../middleware/auth");
+const { authenticateToken, requireGroup } = require("../middleware/auth");
 
 // Get all tasks
-router.get("/:App_Acronym/all", authenticateToken, getTasks);
+router.get("/:App_Acronym/all", getTasks);
 
 // Create a new task
-router.post("/:App_Acronym/create", authenticateToken, createTask);
+router.post("/:App_Acronym/create", createTask);
 
 // Get task details
-router.get("/:App_Acronym/:Task_id", authenticateToken, getTaskDetails);
+router.get("/:App_Acronym/:Task_id", getTaskDetails);
 
 // Save task plan
-router.put("/:App_Acronym/:Task_id/save-plan", authenticateToken, saveTaskPlan);
+router.put("/:App_Acronym/:Task_id/save-plan", saveTaskPlan);
 
 // Move task open to todo
-router.put(
-    "/:App_Acronym/:Task_id/open-to-todo",
-    authenticateToken,
-    moveOpenTask
-);
+router.put("/:App_Acronym/:Task_id/open-to-todo", moveOpenTask);
 
 // Move task todo to doing
-router.put(
-    "/:App_Acronym/:Task_id/todo-to-doing",
-    authenticateToken,
-    moveTodoTask
-);
+router.put("/:App_Acronym/:Task_id/todo-to-doing", moveTodoTask);
 
 // Move task doing to done
-router.put(
-    "/:App_Acronym/:Task_id/doing-to-done",
-    authenticateToken,
-    moveDoingTask
-);
+router.put("/:App_Acronym/:Task_id/doing-to-done", moveDoingTask);
 
 // Move task done to closed
-router.put(
-    "/:App_Acronym/:Task_id/done-to-closed",
-    authenticateToken,
-    moveDoneTask
-);
+router.put("/:App_Acronym/:Task_id/done-to-closed", moveDoneTask);
 
 // Move task doing back to todo
-router.put(
-    "/:App_Acronym/:Task_id/doing-to-todo",
-    authenticateToken,
-    moveBackDoingTask
-);
+router.put("/:App_Acronym/:Task_id/doing-to-todo", moveBackDoingTask);
 
 // Move task done back to doing
-router.put(
-    "/:App_Acronym/:Task_id/done-to-doing",
-    authenticateToken,
-    moveBackDoneTask
-);
+router.put("/:App_Acronym/:Task_id/done-to-doing", moveBackDoneTask);
 
 // Update task notes
-router.put(
-    "/:App_Acronym/:Task_id/update-notes",
-    authenticateToken,
-    updateTaskNotes
-);
+router.put("/:App_Acronym/:Task_id/update-notes", updateTaskNotes);
 
 module.exports = router;
