@@ -30,7 +30,6 @@ const EditAppModal = ({ isOpen, onRequestClose, appAcronym, fetchApps }) => {
 
     useEffect(() => {
         if (isOpen) {
-            // Fetch app details
             const fetchAppDetails = async () => {
                 try {
                     const response = await axios.get(

@@ -42,7 +42,7 @@ const App = () => {
                                 <Route
                                     path="/:appAcronym"
                                     element={<ApplicationPage />}
-                                />{" "}
+                                />
                                 <Route path="*" element={<Navigate to="/" />} />
                             </Routes>
                         </ProtectedRoute>

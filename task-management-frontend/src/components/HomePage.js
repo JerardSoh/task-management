@@ -12,7 +12,6 @@ const HomePage = () => {
     const [selectedAppAcronym, setSelectedAppAcronym] = useState(null);
     const [apps, setApps] = useState([]);
     const [isProjectLead, setIsProjectLead] = useState(false);
-    const [message, setMessage] = useState({ type: "", text: "" });
     const navigate = useNavigate();
 
     const fetchApps = async () => {
@@ -25,10 +24,6 @@ const HomePage = () => {
             );
             setApps(response.data.apps);
         } catch (error) {
-            setMessage({
-                type: "error",
-                text: error.response.data.message || "An error occurred",
-            });
             if (error.request.status === 401) {
                 navigate("/login");
             } else if (error.request.status === 403) {
@@ -54,10 +49,6 @@ const HomePage = () => {
                 setIsProjectLead(response.data.success);
             } catch (error) {
                 setIsProjectLead(false);
-                setMessage({
-                    type: "error",
-                    text: error.response.data.message || "An error occurred",
-                });
             }
         };
 
