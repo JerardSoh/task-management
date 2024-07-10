@@ -881,7 +881,7 @@ const sendEmail = asyncHandler(async (req, res) => {
 
     // Get all user emails
     const [emails] = await db.query(
-        "SELECT email FROM users WHERE username IN (?)",
+        "SELECT email FROM users WHERE username IN (?) AND status = true",
         [usernames]
     );
 
