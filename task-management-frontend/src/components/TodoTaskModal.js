@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Modal from "react-modal";
 import axios from "axios";
 import ReadOnlyTask from "./ReadOnlyTask";
-import "../styles/OpenTaskModal.css"; // Use the same CSS as OpenTaskModal
+import "../styles/OpenTaskModal.css";
 
 Modal.setAppElement("#root");
 
@@ -117,7 +117,7 @@ const TodoTaskModal = ({
                 text: "Note added successfully",
             });
             setNewNote("");
-            fetchTaskDetails(); // Fetch updated task details
+            fetchTaskDetails();
         } catch (error) {
             setMessage({
                 type: "error",

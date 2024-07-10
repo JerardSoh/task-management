@@ -66,7 +66,7 @@ const ApplicationPage = () => {
         checkPermission();
     }, []);
 
-    // Check if user is a project manager
+    // Check if user is a project manager for plans
     useEffect(() => {
         const checkProjectManagerStatus = async () => {
             try {

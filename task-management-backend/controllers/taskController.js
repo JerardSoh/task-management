@@ -857,7 +857,7 @@ const updateTaskNotes = asyncHandler(async (req, res) => {
     }
 });
 
-// Send email to all user emails that belong to the app permit group of done | route: /task/:App_Acronym/:Task_id/update-notes
+// Send email to all user emails that belong to the app permit group of done | route: /task/:App_Acronym/:Task_id/send-email
 const sendEmail = asyncHandler(async (req, res) => {
     const { App_Acronym, Task_id } = req.params;
     const [appPermits] = await db.query(

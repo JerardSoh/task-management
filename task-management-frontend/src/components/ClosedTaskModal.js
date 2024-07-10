@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Modal from "react-modal";
 import axios from "axios";
 import Select from "react-select";
-import "../styles/OpenTaskModal.css"; // Use the same CSS as OpenTaskModal
+import "../styles/OpenTaskModal.css";
 
 Modal.setAppElement("#root");
 

@@ -48,8 +48,8 @@ const OpenTaskModal = ({
         }
     }, [isOpen, appAcronym]);
 
+    // Update form state when task prop changes
     useEffect(() => {
-        // Update form state when task prop changes
         if (task) {
             setForm({
                 Task_plan: task.Task_plan || "",
@@ -155,9 +155,9 @@ const OpenTaskModal = ({
             });
             setForm((prevForm) => ({
                 ...prevForm,
-                Task_plan: "", // Reset Task_plan to initial value
+                Task_plan: "",
             }));
-            fetchTasks(); // Fetch updated tasks
+            fetchTasks();
             onRequestClose();
         } catch (error) {
             setMessage({
@@ -181,7 +181,7 @@ const OpenTaskModal = ({
                 text: "Note added successfully",
             });
             setNewNote("");
-            fetchTaskDetails(); // Fetch updated task details
+            fetchTaskDetails();
         } catch (error) {
             setMessage({
                 type: "error",
@@ -195,7 +195,7 @@ const OpenTaskModal = ({
         setNewNote("");
         setForm((prevForm) => ({
             ...prevForm,
-            Task_plan: "", // Reset Task_plan to initial value
+            Task_plan: "",
         }));
         onRequestClose();
     };
