@@ -12,6 +12,7 @@ const {
     moveDoneTask,
     moveBackDoneTask,
     updateTaskNotes,
+    sendEmail,
 } = require("../controllers/taskController");
 
 const { authenticateToken, requireGroup } = require("../middleware/auth");
@@ -48,5 +49,8 @@ router.put("/:App_Acronym/:Task_id/done-to-doing", moveBackDoneTask);
 
 // Update task notes
 router.put("/:App_Acronym/:Task_id/update-notes", updateTaskNotes);
+
+// Send email
+router.post("/:App_Acronym/:Task_id/send-email", sendEmail);
 
 module.exports = router;

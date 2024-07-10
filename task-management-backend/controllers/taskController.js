@@ -1,8 +1,13 @@
+require("dotenv").config();
 const db = require("../db");
 const HttpError = require("../utils/httpError");
 const asyncHandler = require("../utils/asyncHandler");
 const { format, parseISO, isBefore } = require("date-fns");
 const { checkGroup } = require("../middleware/auth");
+const nodemailer = require("nodemailer");
+
+// Sleep function to introduce a delay
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // Constants for HTTP status codes
 const STATUS_OK = 200;
@@ -852,6 +857,91 @@ const updateTaskNotes = asyncHandler(async (req, res) => {
     }
 });
 
+// Send email to all user emails that belong to the app permit group of done | route: /task/:App_Acronym/:Task_id/update-notes
+const sendEmail = asyncHandler(async (req, res) => {
+    const { App_Acronym, Task_id } = req.params;
+    const [appPermits] = await db.query(
+        "SELECT App_permit_Done FROM App WHERE App_Acronym = ? ",
+        [App_Acronym]
+    );
+    const appPermitGroup = appPermits[0]?.App_permit_Done;
+    if (!appPermitGroup) {
+        return res.status(400).json({
+            success: false,
+            message: "No permission group found for the app",
+        });
+    }
+
+    const [users] = await db.query(
+        "SELECT username FROM usergroup WHERE groupname = ?",
+        [appPermitGroup]
+    );
+
+    const usernames = users.map((user) => user.username);
+
+    // Get all user emails
+    const [emails] = await db.query(
+        "SELECT email FROM users WHERE username IN (?)",
+        [usernames]
+    );
+
+    if (emails.length === 0) {
+        return res
+            .status(400)
+            .json({ success: false, message: "No emails found for the users" });
+    }
+
+    // Get task details
+    const [tasks] = await db.query("SELECT * FROM Task WHERE Task_id = ?", [
+        Task_id,
+    ]);
+
+    const task = tasks[0];
+    if (!task) {
+        return res
+            .status(404)
+            .json({ success: false, message: "Task not found" });
+    }
+
+    const transporter = nodemailer.createTransport({
+        service: "outlook",
+        auth: {
+            user: process.env.EMAIL,
+            pass: process.env.EMAIL_PASSWORD,
+        },
+    });
+
+    for (const user of emails) {
+        if (user.email) {
+            const mailOptions = {
+                from: process.env.EMAIL,
+                to: user.email,
+                subject: `${task.Task_id} has been completed!`,
+                text:
+                    `This task has been moved from Doing to Done by ${task.Task_owner}. Here are the details:\n` +
+                    `Task Name: ${task.Task_Name}\n` +
+                    `Task Description: ${task.Task_description}\n` +
+                    `Task Plan: ${task.Task_plan}\n` +
+                    `Task Creator: ${task.Task_creator}\n` +
+                    `Task Owner: ${task.Task_owner}\n` +
+                    `Task Create Date: ${task.Task_createDate}\n`,
+            };
+
+            try {
+                await transporter.sendMail(mailOptions);
+                console.log("Email sent to:", user.email);
+                await sleep(5000);
+            } catch (error) {
+                console.error("Error sending email to:", user.email, error);
+            }
+        }
+    }
+    res.status(200).json({
+        success: true,
+        message: "Emails sent successfully",
+    });
+});
+
 module.exports = {
     getTasks,
     createTask,
@@ -864,4 +954,5 @@ module.exports = {
     moveDoneTask,
     moveBackDoneTask,
     updateTaskNotes,
+    sendEmail,
 };

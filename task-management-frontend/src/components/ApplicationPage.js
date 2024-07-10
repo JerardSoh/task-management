@@ -24,6 +24,7 @@ const ApplicationPage = () => {
     const [isDoneTaskModalOpen, setIsDoneTaskModalOpen] = useState(false);
     const [isClosedTaskModalOpen, setIsClosedTaskModalOpen] = useState(false);
     const [canEditCreate, setCanEditCreate] = useState(false);
+    const [appDescription, setAppDescription] = useState("");
 
     const fetchTasks = async () => {
         try {
@@ -85,6 +86,24 @@ const ApplicationPage = () => {
         checkProjectManagerStatus();
     }, [navigate]);
 
+    // Get app description
+    useEffect(() => {
+        const fetchAppDescription = async () => {
+            try {
+                const response = await axios.get(
+                    `${process.env.REACT_APP_API_URL}/app/${appAcronym}`,
+                    {
+                        withCredentials: true,
+                    }
+                );
+                setAppDescription(response.data.app.App_Description);
+            } catch (error) {
+                console.error("Error fetching app description", error);
+            }
+        };
+        fetchAppDescription();
+    }, [appAcronym]);
+
     const columns = [
         { id: "open", title: "Open" },
         { id: "todo", title: "To-Do" },
@@ -100,7 +119,7 @@ const ApplicationPage = () => {
         <div>
             <header className="header">
                 <h1>{appAcronym}</h1>
-                <p>It is an application about {appAcronym}.</p>
+                <p>{appDescription}</p>
                 <div className="header-buttons">
                     {canEditCreate && (
                         <button onClick={() => setIsCreateTaskModalOpen(true)}>
