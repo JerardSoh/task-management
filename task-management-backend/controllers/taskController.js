@@ -529,7 +529,7 @@ const moveDoingTask = asyncHandler(async (req, res) => {
                     text: `Task ${task.Task_Name} is completed by ${Task_owner}`,
                 };
 
-                await transporter.sendMail(mailOptions);
+                transporter.sendMail(mailOptions);
             }
         }
 
