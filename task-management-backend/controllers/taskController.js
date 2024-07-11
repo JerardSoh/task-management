@@ -452,15 +452,17 @@ const moveDoingTask = asyncHandler(async (req, res) => {
         }
 
         // Check if the task exists
-        const [task] = await db.query("SELECT * FROM Task WHERE Task_id = ? ", [
-            Task_id,
-        ]);
-        if (task.length === 0) {
+        const [tasks] = await db.query(
+            "SELECT * FROM Task WHERE Task_id = ? ",
+            [Task_id]
+        );
+        if (tasks.length === 0) {
             throw new HttpError("Task not found", STATUS_NOT_FOUND);
         }
+        const task = tasks[0];
 
         // Check if the task is in "Doing" state
-        if (task[0].Task_state !== "doing") {
+        if (task.Task_state !== "doing") {
             throw new HttpError(
                 "Task is not in 'Doing' state",
                 STATUS_BAD_REQUEST
@@ -475,7 +477,7 @@ const moveDoingTask = asyncHandler(async (req, res) => {
 
         // Create notes with format of [Task_createDate, Task_state] Task_notes
         const unformattedTask_createDate = new Date();
-        const addTask_notes = `[${unformattedTask_createDate}, '${task[0].Task_state}'] ${req.user.username} has completed the Task.\n ##########################################################\n`;
+        const addTask_notes = `[${unformattedTask_createDate}, '${task.Task_state}'] ${req.user.username} has completed the Task.\n ##########################################################\n`;
 
         // Update Task_notes
         await connection.execute(
@@ -488,6 +490,48 @@ const moveDoingTask = asyncHandler(async (req, res) => {
             "UPDATE Task SET Task_owner = ? WHERE Task_id = ?",
             [Task_owner, Task_id]
         );
+
+        // Start of sending email section
+        const [appPermitDone] = await db.query(
+            "SELECT App_permit_Done FROM App WHERE App_Acronym = ? ",
+            [App_Acronym]
+        );
+
+        const appPermitDoneGroup = appPermitDone[0].App_permit_Done;
+        // check if appPermitDoneGroup is not empty
+        if (appPermitDoneGroup) {
+            // get all users from the done group
+            const [users] = await db.query(
+                "SELECT username FROM usergroup WHERE groupname = ?",
+                [appPermitDoneGroup]
+            );
+            const usernames = users.map((user) => user.username);
+            // Get all user emails
+            const [emails] = await db.query(
+                "SELECT email FROM users WHERE username IN (?) AND status = true",
+                [usernames]
+            );
+
+            // Send email to all users in the group, if there is any
+            if (emails.length > 0) {
+                const transporter = nodemailer.createTransport({
+                    service: "outlook",
+                    auth: {
+                        user: process.env.EMAIL,
+                        pass: process.env.EMAIL_PASSWORD,
+                    },
+                });
+
+                const mailOptions = {
+                    from: process.env.EMAIL,
+                    to: emails.map((email) => email.email).join(","),
+                    subject: `${task.Task_id} has been completed!`,
+                    text: `Task ${task.Task_Name} is completed by ${Task_owner}`,
+                };
+
+                await transporter.sendMail(mailOptions);
+            }
+        }
 
         await connection.commit();
 
@@ -901,6 +945,14 @@ const sendEmail = asyncHandler(async (req, res) => {
         return res
             .status(404)
             .json({ success: false, message: "Task not found" });
+    }
+
+    // Check if the task is in "Done" state
+    if (task.Task_state !== "done") {
+        return res.status(400).json({
+            success: false,
+            message: "Task is not in 'Done' state",
+        });
     }
 
     const transporter = nodemailer.createTransport({

@@ -95,14 +95,6 @@ const DoingTaskModal = ({
             });
             fetchTasks();
             onRequestClose();
-            // send email
-            await axios.post(
-                `${process.env.REACT_APP_API_URL}/task/${appAcronym}/${task.Task_id}/send-email`,
-                {},
-                {
-                    withCredentials: true,
-                }
-            );
         } catch (error) {
             setMessage({
                 type: "error",
