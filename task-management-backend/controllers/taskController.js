@@ -294,6 +294,14 @@ const saveTaskPlan = asyncHandler(async (req, res) => {
             throw new HttpError("Task not found", STATUS_NOT_FOUND);
         }
 
+        // Check if the task is in "Open" state
+        if (task[0].Task_state !== "open") {
+            throw new HttpError(
+                "Task is not in 'Open' state",
+                STATUS_BAD_REQUEST
+            );
+        }
+
         // Update Task_plan
         await connection.execute(
             "UPDATE Task SET Task_plan = ? WHERE Task_id = ?",
