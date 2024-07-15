@@ -520,8 +520,13 @@ const moveDoingTask = asyncHandler(async (req, res) => {
                 [usernames]
             );
 
+            // Filter out empty emails
+            const validEmails = emails.filter(
+                (emailObj) => emailObj.email.trim() !== ""
+            );
+
             // Send email to all users in the group, if there is any
-            if (emails.length > 0) {
+            if (validEmails.length > 0) {
                 const transporter = nodemailer.createTransport({
                     service: "outlook",
                     auth: {
