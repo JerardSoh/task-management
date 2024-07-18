@@ -537,7 +537,7 @@ const moveDoingTask = asyncHandler(async (req, res) => {
 
                 const mailOptions = {
                     from: process.env.EMAIL,
-                    to: emails.map((email) => email.email).join(","),
+                    to: validEmails.map((email) => email.email).join(","),
                     subject: `${task.Task_id} has been completed!`,
                     text: `Task ${task.Task_Name} is completed by ${Task_owner}`,
                 };
